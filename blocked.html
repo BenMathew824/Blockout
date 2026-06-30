@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Blocked — Locked In</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        background: #1a1a2e;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        text-align: center;
+      }
+      h1 { font-size: 28px; margin-bottom: 8px; }
+      p { color: #ccc; margin-bottom: 24px; }
+      #site { color: #e74c3c; font-weight: bold; }
+      #topic {
+        background: #25253f;
+        padding: 10px 16px;
+        border-radius: 8px;
+        margin-bottom: 24px;
+        font-size: 14px;
+        display: none;
+      }
+      button {
+        padding: 10px 20px;
+        background: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      button:hover { opacity: 0.9; }
+    </style>
+  </head>
+  <body>
+    <h1>🔒 You're Locked In</h1>
+    <p><span id="site"></span> was flagged as off-topic and blocked while Focus Mode is on.</p>
+    <div id="topic">📚 You said you're focusing on: <strong id="topicText"></strong></div>
+    <button id="back">Go Back</button>
+
+    <script src="blocked.js"></script>
+  </body>
+</html>

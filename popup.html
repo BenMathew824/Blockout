@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Locked In</title>
+    <style>
+      body {
+        width: 260px;
+        padding: 20px;
+        font-family: sans-serif;
+        background: #1a1a2e;
+        color: white;
+      }
+      h1 {
+        font-size: 18px;
+        margin-bottom: 16px;
+      }
+      .toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+      .switch {
+        position: relative;
+        width: 44px;
+        height: 24px;
+      }
+      .switch input { opacity: 0; width: 0; height: 0; }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background-color: #555;
+        border-radius: 24px;
+        transition: 0.2s;
+      }
+      .slider::before {
+        content: "";
+        position: absolute;
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        border-radius: 50%;
+        transition: 0.2s;
+      }
+      input:checked + .slider { background-color: #e74c3c; }
+      input:checked + .slider::before { transform: translateX(20px); }
+
+      .session-box {
+        background: #25253f;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 16px;
+        text-align: center;
+      }
+      #countdown {
+        font-size: 28px;
+        font-weight: bold;
+        margin-bottom: 8px;
+      }
+      .presets {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+      .presets button {
+        flex: 1;
+        padding: 8px 0;
+        background: #33334d;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .presets button.selected {
+        background: #e74c3c;
+      }
+      #startSession, #stopSession {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        color: white;
+      }
+      #startSession { background: #2ecc71; }
+      #stopSession { background: #555; }
+
+      .mode-tabs {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+      .mode-tab {
+        flex: 1;
+        padding: 6px 0;
+        background: none;
+        border: 1px solid #444;
+        color: #aaa;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .mode-tab.selected {
+        background: #33334d;
+        color: white;
+        border-color: #33334d;
+      }
+      .custom-duration {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+      .custom-duration input[type="number"] {
+        width: 50px;
+        padding: 8px;
+        border-radius: 6px;
+        border: none;
+        font-size: 13px;
+        text-align: center;
+      }
+      .custom-duration span {
+        font-size: 12px;
+        color: #aaa;
+      }
+      .settings-section {
+        margin-top: 16px;
+        border-top: 1px solid #333;
+        padding-top: 12px;
+      }
+      .settings-toggle {
+        background: none;
+        border: none;
+        color: #aaa;
+        font-size: 12px;
+        cursor: pointer;
+        padding: 0;
+        margin-bottom: 8px;
+      }
+      #aiSettingsBody { display: none; }
+      #apiKeyInput {
+        width: 100%;
+        padding: 8px;
+        border-radius: 6px;
+        border: none;
+        font-size: 12px;
+        margin-bottom: 8px;
+        box-sizing: border-box;
+      }
+      #saveApiKey {
+        width: 100%;
+        padding: 8px;
+        background: #33334d;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      input[type="time"] {
+        width: 100%;
+        padding: 8px;
+        border-radius: 6px;
+        border: none;
+        font-size: 13px;
+        margin-bottom: 8px;
+        box-sizing: border-box;
+      }
+      #studyTopic {
+        width: 100%;
+        padding: 8px;
+        border-radius: 6px;
+        border: none;
+        font-size: 13px;
+        margin-bottom: 8px;
+        box-sizing: border-box;
+      }
+      #studyTopicDisplay {
+        font-size: 13px;
+        color: #ccc;
+        margin-bottom: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔒 Locked In</h1>
+
+    <div id="sessionActiveBox" class="session-box" style="display: none">
+      <div id="studyTopicDisplay"></div>
+      <div id="countdown">25:00</div>
+      <button id="stopSession">End Session Early</button>
+    </div>
+
+    <div id="sessionSetupBox">
+      <div class="mode-tabs">
+        <button class="mode-tab selected" data-mode="duration">For</button>
+        <button class="mode-tab" data-mode="until">Until</button>
+      </div>
+
+      <div id="durationMode">
+        <div class="presets">
+          <button data-minutes="25">25m</button>
+          <button data-minutes="50">50m</button>
+          <button data-minutes="90">90m</button>
+        </div>
+        <div class="custom-duration">
+          <input type="number" id="customHours" min="0" max="23" value="0" />
+          <span>h</span>
+          <input type="number" id="customMinutes" min="0" max="59" value="25" />
+          <span>m</span>
+        </div>
+      </div>
+
+      <div id="untilMode" style="display: none">
+        <input type="time" id="untilTime" />
+      </div>
+
+      <input type="text" id="studyTopic" placeholder="What are you studying?" />
+
+      <button id="startSession">Start Focus Session</button>
+    </div>
+
+    <div class="toggle-row">
+      <span>Focus Mode</span>
+      <label class="switch">
+        <input type="checkbox" id="focusToggle" />
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="settings-section">
+      <button class="settings-toggle" id="toggleAiSettings">⚙ Anthropic API Key ▾</button>
+      <div id="aiSettingsBody">
+        <input type="password" id="apiKeyInput" placeholder="Anthropic API key (sk-ant-...)" />
+        <button id="saveApiKey">Save Key</button>
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
