@@ -64,30 +64,58 @@ async function classifyTabRelevance(hostname, title, topic, apiKey) {
   }
 }
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status !== "complete" || !tab.url) return;
-  if (!tab.url.startsWith("http")) return;
+// tabId -> last URL we already classified, so re-firing events for the same
+// URL (e.g. onCompleted right after onHistoryStateUpdated) don't double-call the API.
+const lastProcessedUrl = new Map();
 
-  chrome.storage.sync.get(["focusModeOn"], (syncData) => {
-    if (!syncData.focusModeOn) return;
+async function maybeBlockTab(tabId, url) {
+  if (!url || !url.startsWith("http")) return;
+  if (lastProcessedUrl.get(tabId) === url) return;
+  lastProcessedUrl.set(tabId, url);
 
-    const hostname = new URL(tab.url).hostname;
+  const syncData = await chrome.storage.sync.get(["focusModeOn"]);
+  if (!syncData.focusModeOn) return;
 
-    chrome.storage.local.get(["studyTopic", "anthropicApiKey"], (localData) => {
-      if (!localData.studyTopic || !localData.anthropicApiKey) return;
+  const localData = await chrome.storage.local.get(["studyTopic", "anthropicApiKey"]);
+  if (!localData.studyTopic || !localData.anthropicApiKey) return;
 
-      classifyTabRelevance(hostname, tab.title, localData.studyTopic, localData.anthropicApiKey).then(
-        (isDistracting) => {
-          if (isDistracting) {
-            const blockedUrl = chrome.runtime.getURL(
-              `blocked.html?site=${encodeURIComponent(hostname)}`
-            );
-            chrome.tabs.update(tabId, { url: blockedUrl });
-          }
-        }
-      );
-    });
-  });
+  let title = "";
+  try {
+    const tab = await chrome.tabs.get(tabId);
+    title = tab.title || "";
+  } catch (err) {
+    return; // tab closed before we could read it
+  }
+
+  const hostname = new URL(url).hostname;
+  const isDistracting = await classifyTabRelevance(
+    hostname,
+    title,
+    localData.studyTopic,
+    localData.anthropicApiKey
+  );
+  if (isDistracting) {
+    const blockedUrl = chrome.runtime.getURL(`blocked.html?site=${encodeURIComponent(hostname)}`);
+    chrome.tabs.update(tabId, { url: blockedUrl });
+  }
+}
+
+// Full page loads (frameId 0 = main frame, not iframes).
+chrome.webNavigation.onCompleted.addListener((details) => {
+  if (details.frameId !== 0) return;
+  maybeBlockTab(details.tabId, details.url);
+});
+
+// SPA navigations (history.pushState/replaceState) — e.g. clicking between
+// videos on YouTube never triggers a full page load, only this event.
+chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
+  if (details.frameId !== 0) return;
+  // Give the page a moment to update document.title after the route change.
+  setTimeout(() => maybeBlockTab(details.tabId, details.url), 500);
+});
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+  lastProcessedUrl.delete(tabId);
 });
 
 function updateBadge() {
