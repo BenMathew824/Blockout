@@ -75,11 +75,16 @@
         font-size: 28px;
         font-weight: 700;
         font-variant-numeric: tabular-nums;
-        margin-bottom: 10px;
+        margin-bottom: 4px;
         background: linear-gradient(90deg, #e74c3c, #f39c12);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
+      }
+      #sessionBlockCount {
+        font-size: 12px;
+        color: #8a8aa0;
+        margin-bottom: 10px;
       }
       .presets {
         display: flex;
@@ -172,7 +177,81 @@
         padding: 0;
         margin-bottom: 8px;
       }
-      #aiSettingsBody { display: none; }
+      .settings-body { display: none; }
+
+      ul.chip-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 10px;
+        max-height: 120px;
+        overflow-y: auto;
+      }
+      ul.chip-list li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 6px 10px;
+        border-radius: 8px;
+        margin-bottom: 4px;
+        font-size: 13px;
+      }
+      ul.chip-list li button {
+        background: none;
+        border: none;
+        color: #ff8a75;
+        cursor: pointer;
+        font-size: 13px;
+        padding: 0;
+      }
+      ul.chip-list .empty {
+        color: #8a8aa0;
+        font-size: 12px;
+        padding: 4px 2px;
+      }
+      .add-row { display: flex; gap: 6px; margin-bottom: 4px; }
+      .add-row input[type="text"] {
+        flex: 1;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.06);
+        color: white;
+        font-size: 13px;
+      }
+      .add-row input[type="text"]::placeholder { color: #8a8aa0; }
+      .add-row button {
+        padding: 8px 12px;
+        background: linear-gradient(90deg, #e74c3c, #f39c12);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+
+      .stat-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
+      .stat-row strong { color: white; }
+      #statsTopSites { font-size: 12px; color: #b8b8c8; margin-bottom: 10px; }
+      #statsTopSites .site-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+      #statsTopSites .empty { color: #8a8aa0; }
+      #resetStats {
+        width: 100%;
+        padding: 8px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        border-radius: 8px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      #resetStats:hover { background: rgba(255, 255, 255, 0.14); }
       #apiKeyInput {
         width: 100%;
         padding: 8px;
@@ -233,6 +312,7 @@
     <div id="sessionActiveBox" class="session-box" style="display: none">
       <div id="studyTopicDisplay"></div>
       <div id="countdown">25:00</div>
+      <div id="sessionBlockCount"></div>
       <button id="stopSession">End Session Early</button>
     </div>
 
@@ -274,10 +354,33 @@
     </div>
 
     <div class="settings-section">
-      <button class="settings-toggle" id="toggleAiSettings">⚙ Anthropic API Key ▾</button>
-      <div id="aiSettingsBody">
+      <button class="settings-toggle" data-target="aiSettingsBody">⚙ Anthropic API Key ▾</button>
+      <div id="aiSettingsBody" class="settings-body">
         <input type="password" id="apiKeyInput" placeholder="Anthropic API key (sk-ant-...)" />
         <button id="saveApiKey">Save Key</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <button class="settings-toggle" data-target="allowlistBody">✅ Always Allow ▾</button>
+      <div id="allowlistBody" class="settings-body">
+        <ul id="allowlistList" class="chip-list"></ul>
+        <div class="add-row">
+          <input type="text" id="newAllowSite" placeholder="docs.google.com" />
+          <button id="addAllowSite">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <button class="settings-toggle" data-target="statsBody">📊 Stats ▾</button>
+      <div id="statsBody" class="settings-body">
+        <div class="stat-row">
+          <span>Total blocked</span>
+          <strong id="statsTotal">0</strong>
+        </div>
+        <div id="statsTopSites"></div>
+        <button id="resetStats">Reset Stats</button>
       </div>
     </div>
 

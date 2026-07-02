@@ -2,14 +2,20 @@ const SESSION_END_ALARM = "focusSessionEnd";
 const SESSION_TICK_ALARM = "focusSessionTick";
 
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.sync.get(["focusModeOn"], (data) => {
+  chrome.storage.sync.get(["focusModeOn", "allowlist"], (data) => {
     if (data.focusModeOn === undefined) {
       chrome.storage.sync.set({ focusModeOn: false });
     }
+    if (data.allowlist === undefined) {
+      chrome.storage.sync.set({ allowlist: [] });
+    }
   });
-  chrome.storage.local.get(["sessionActive"], (data) => {
+  chrome.storage.local.get(["sessionActive", "lifetimeStats"], (data) => {
     if (data.sessionActive === undefined) {
       chrome.storage.local.set({ sessionActive: false, sessionEndTime: null });
+    }
+    if (data.lifetimeStats === undefined) {
+      chrome.storage.local.set({ lifetimeStats: { totalBlocks: 0, siteCounts: {} } });
     }
   });
   updateBadge();
@@ -68,6 +74,28 @@ async function classifyTabRelevance(hostname, title, topic, apiKey) {
   }
 }
 
+function matchesAllowlist(hostname, allowlist) {
+  return allowlist.some((site) => hostname === site || hostname.endsWith("." + site));
+}
+
+async function recordBlock(hostname) {
+  const data = await chrome.storage.local.get(["lifetimeStats", "sessionStats"]);
+  const lifetimeStats = data.lifetimeStats || { totalBlocks: 0, siteCounts: {} };
+  lifetimeStats.totalBlocks += 1;
+  lifetimeStats.siteCounts[hostname] = (lifetimeStats.siteCounts[hostname] || 0) + 1;
+
+  const updates = { lifetimeStats };
+
+  if (data.sessionStats) {
+    const sessionStats = data.sessionStats;
+    sessionStats.totalBlocks += 1;
+    sessionStats.siteCounts[hostname] = (sessionStats.siteCounts[hostname] || 0) + 1;
+    updates.sessionStats = sessionStats;
+  }
+
+  await chrome.storage.local.set(updates);
+}
+
 // tabId -> last URL we've already run a classification for, so re-firing
 // navigation events for the same final URL doesn't double-call the API.
 const lastProcessedUrl = new Map();
@@ -111,9 +139,16 @@ async function runClassification(tabId) {
   if (lastProcessedUrl.get(tabId) === url) return;
   lastProcessedUrl.set(tabId, url);
 
-  const syncData = await chrome.storage.sync.get(["focusModeOn"]);
+  const syncData = await chrome.storage.sync.get(["focusModeOn", "allowlist"]);
   if (!syncData.focusModeOn) {
     console.log("LockedIn: skipped", url, "- Focus Mode is off");
+    return;
+  }
+
+  const hostname = new URL(url).hostname;
+  if (matchesAllowlist(hostname, syncData.allowlist || [])) {
+    lastRelevantUrl.set(tabId, url);
+    console.log("LockedIn: allowlisted, skipping classification for", hostname);
     return;
   }
 
@@ -134,7 +169,6 @@ async function runClassification(tabId) {
     return; // tab closed before we could read it
   }
 
-  const hostname = new URL(url).hostname;
   const isDistracting = await classifyTabRelevance(
     hostname,
     title,
@@ -142,6 +176,7 @@ async function runClassification(tabId) {
     localData.anthropicApiKey
   );
   if (isDistracting) {
+    recordBlock(hostname);
     const returnTo = lastRelevantUrl.get(tabId);
     let blockedUrl = `blocked.html?site=${encodeURIComponent(hostname)}&blockedFrom=${encodeURIComponent(url)}`;
     if (returnTo) {
@@ -230,6 +265,7 @@ function startSession(minutes, topic) {
     sessionStartTime: startTime,
     sessionEndTime: endTime,
     studyTopic: topic || "",
+    sessionStats: { totalBlocks: 0, siteCounts: {} },
   });
   chrome.storage.sync.set({ focusModeOn: true });
   chrome.alarms.create(SESSION_END_ALARM, { when: endTime });

@@ -3,6 +3,7 @@ const toggleRow = focusToggle.closest(".toggle-row");
 const sessionActiveBox = document.getElementById("sessionActiveBox");
 const sessionSetupBox = document.getElementById("sessionSetupBox");
 const countdownEl = document.getElementById("countdown");
+const sessionBlockCountEl = document.getElementById("sessionBlockCount");
 const presetButtons = document.querySelectorAll(".presets button");
 const modeTabs = document.querySelectorAll(".mode-tab");
 const durationMode = document.getElementById("durationMode");
@@ -12,9 +13,11 @@ const customMinutes = document.getElementById("customMinutes");
 const untilTime = document.getElementById("untilTime");
 const studyTopicInput = document.getElementById("studyTopic");
 const studyTopicDisplay = document.getElementById("studyTopicDisplay");
-const toggleAiSettings = document.getElementById("toggleAiSettings");
-const aiSettingsBody = document.getElementById("aiSettingsBody");
 const apiKeyInput = document.getElementById("apiKeyInput");
+const allowlistList = document.getElementById("allowlistList");
+const newAllowSiteInput = document.getElementById("newAllowSite");
+const statsTotalEl = document.getElementById("statsTotal");
+const statsTopSitesEl = document.getElementById("statsTopSites");
 
 let sessionMode = "duration";
 let countdownInterval = null;
@@ -45,39 +48,104 @@ function startCountdown(sessionEndTime) {
   countdownInterval = setInterval(tick, 1000);
 }
 
+function renderSessionBlockCount(sessionStats) {
+  const count = sessionStats?.totalBlocks || 0;
+  sessionBlockCountEl.textContent = `🚫 ${count} blocked this session`;
+}
+
 function renderSessionState() {
-  chrome.storage.local.get(["sessionActive", "sessionEndTime", "studyTopic"], (data) => {
-    if (data.sessionActive && data.sessionEndTime) {
-      sessionActiveBox.style.display = "block";
-      sessionSetupBox.style.display = "none";
-      toggleRow.style.display = "none";
-      studyTopicDisplay.textContent = data.studyTopic ? `📚 ${data.studyTopic}` : "";
-      startCountdown(data.sessionEndTime);
-    } else {
-      sessionActiveBox.style.display = "none";
-      sessionSetupBox.style.display = "block";
-      toggleRow.style.display = "flex";
-      clearInterval(countdownInterval);
+  chrome.storage.local.get(
+    ["sessionActive", "sessionEndTime", "studyTopic", "sessionStats"],
+    (data) => {
+      if (data.sessionActive && data.sessionEndTime) {
+        sessionActiveBox.style.display = "block";
+        sessionSetupBox.style.display = "none";
+        toggleRow.style.display = "none";
+        studyTopicDisplay.textContent = data.studyTopic ? `📚 ${data.studyTopic}` : "";
+        renderSessionBlockCount(data.sessionStats);
+        startCountdown(data.sessionEndTime);
+      } else {
+        sessionActiveBox.style.display = "none";
+        sessionSetupBox.style.display = "block";
+        toggleRow.style.display = "flex";
+        clearInterval(countdownInterval);
+      }
     }
+  );
+}
+
+function renderAllowlist(allowlist) {
+  allowlistList.innerHTML = "";
+  if (!allowlist.length) {
+    const empty = document.createElement("li");
+    empty.className = "empty";
+    empty.textContent = "No sites added yet";
+    allowlistList.appendChild(empty);
+    return;
+  }
+  allowlist.forEach((site) => {
+    const li = document.createElement("li");
+    const label = document.createElement("span");
+    label.textContent = site;
+    const removeBtn = document.createElement("button");
+    removeBtn.textContent = "✕";
+    removeBtn.addEventListener("click", () => {
+      const updated = allowlist.filter((s) => s !== site);
+      chrome.storage.sync.set({ allowlist: updated }, () => renderAllowlist(updated));
+    });
+    li.appendChild(label);
+    li.appendChild(removeBtn);
+    allowlistList.appendChild(li);
+  });
+}
+
+function renderStats(lifetimeStats) {
+  const stats = lifetimeStats || { totalBlocks: 0, siteCounts: {} };
+  statsTotalEl.textContent = stats.totalBlocks;
+
+  const topSites = Object.entries(stats.siteCounts || {})
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+
+  statsTopSitesEl.innerHTML = "";
+  if (!topSites.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "No blocks yet";
+    statsTopSitesEl.appendChild(empty);
+    return;
+  }
+  topSites.forEach(([site, count]) => {
+    const row = document.createElement("div");
+    row.className = "site-row";
+    const label = document.createElement("span");
+    label.textContent = site;
+    const value = document.createElement("span");
+    value.textContent = count;
+    row.appendChild(label);
+    row.appendChild(value);
+    statsTopSitesEl.appendChild(row);
   });
 }
 
 function load() {
-  chrome.storage.sync.get(["focusModeOn"], (data) => {
+  chrome.storage.sync.get(["focusModeOn", "allowlist"], (data) => {
     focusToggle.checked = !!data.focusModeOn;
+    renderAllowlist(data.allowlist || []);
   });
-  chrome.storage.local.get(["studyTopic"], (data) => {
+  chrome.storage.local.get(["studyTopic", "anthropicApiKey", "lifetimeStats"], (data) => {
     if (data.studyTopic) studyTopicInput.value = data.studyTopic;
-  });
-  chrome.storage.local.get(["anthropicApiKey"], (data) => {
     if (data.anthropicApiKey) apiKeyInput.placeholder = "•••••••• (key saved)";
+    renderStats(data.lifetimeStats);
   });
   renderSessionState();
 }
 
-toggleAiSettings.addEventListener("click", () => {
-  const open = aiSettingsBody.style.display === "block";
-  aiSettingsBody.style.display = open ? "none" : "block";
+document.querySelectorAll(".settings-toggle").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const body = document.getElementById(btn.dataset.target);
+    body.style.display = body.style.display === "block" ? "none" : "block";
+  });
 });
 
 document.getElementById("saveApiKey").addEventListener("click", () => {
@@ -87,6 +155,35 @@ document.getElementById("saveApiKey").addEventListener("click", () => {
     apiKeyInput.value = "";
     apiKeyInput.placeholder = "•••••••• (key saved)";
   });
+});
+
+document.getElementById("addAllowSite").addEventListener("click", () => {
+  const raw = newAllowSiteInput.value.trim().toLowerCase();
+  if (!raw) return;
+  const hostname = raw.replace(/^https?:\/\//, "").split("/")[0];
+
+  chrome.storage.sync.get(["allowlist"], (data) => {
+    const allowlist = data.allowlist || [];
+    if (!allowlist.includes(hostname)) {
+      allowlist.push(hostname);
+      chrome.storage.sync.set({ allowlist }, () => renderAllowlist(allowlist));
+    }
+    newAllowSiteInput.value = "";
+  });
+});
+
+document.getElementById("resetStats").addEventListener("click", () => {
+  const cleared = { totalBlocks: 0, siteCounts: {} };
+  chrome.storage.local.set({ lifetimeStats: cleared }, () => renderStats(cleared));
+});
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && changes.sessionStats) {
+    renderSessionBlockCount(changes.sessionStats.newValue);
+  }
+  if (area === "local" && changes.lifetimeStats) {
+    renderStats(changes.lifetimeStats.newValue);
+  }
 });
 
 focusToggle.addEventListener("change", () => {
