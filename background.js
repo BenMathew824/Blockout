@@ -59,7 +59,7 @@ async function classifyTabRelevance(hostname, title, topic, apiKey) {
     const data = await response.json();
     const answer = (data.content?.[0]?.text || "").trim().toUpperCase();
     const isDistracting = answer.includes("DISTRACTING");
-    console.log("LockedIn: classified", hostname, "as", answer || "(empty response)");
+    console.log("LockedIn: classified", hostname, `("${title}") as`, answer || "(empty response)");
     classificationCache.set(cacheKey, isDistracting);
     return isDistracting;
   } catch (err) {
@@ -71,6 +71,28 @@ async function classifyTabRelevance(hostname, title, topic, apiKey) {
 // tabId -> last URL we already classified, so re-firing events for the same
 // URL (e.g. onCompleted right after onHistoryStateUpdated) don't double-call the API.
 const lastProcessedUrl = new Map();
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Polls tab.title until it stops changing (SPA sites like YouTube update the
+// title asynchronously after the URL changes) or we hit the attempt cap.
+async function getSettledTitle(tabId) {
+  let lastTitle = null;
+  for (let i = 0; i < 6; i++) {
+    let tab;
+    try {
+      tab = await chrome.tabs.get(tabId);
+    } catch (err) {
+      return null; // tab closed
+    }
+    if (tab.title === lastTitle) return tab.title || "";
+    lastTitle = tab.title;
+    await sleep(300);
+  }
+  return lastTitle || "";
+}
 
 async function maybeBlockTab(tabId, url) {
   if (!url || !url.startsWith("http")) return;
@@ -92,13 +114,8 @@ async function maybeBlockTab(tabId, url) {
     return;
   }
 
-  let title = "";
-  try {
-    const tab = await chrome.tabs.get(tabId);
-    title = tab.title || "";
-  } catch (err) {
-    return; // tab closed before we could read it
-  }
+  const title = await getSettledTitle(tabId);
+  if (title === null) return; // tab closed before we could read it
 
   const hostname = new URL(url).hostname;
   const isDistracting = await classifyTabRelevance(
@@ -123,8 +140,7 @@ chrome.webNavigation.onCompleted.addListener((details) => {
 // videos on YouTube never triggers a full page load, only this event.
 chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
   if (details.frameId !== 0) return;
-  // Give the page a moment to update document.title after the route change.
-  setTimeout(() => maybeBlockTab(details.tabId, details.url), 500);
+  maybeBlockTab(details.tabId, details.url);
 });
 
 chrome.tabs.onRemoved.addListener((tabId) => {
