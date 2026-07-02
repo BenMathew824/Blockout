@@ -175,6 +175,27 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   scheduleClassification(tabId, pending.url);
 });
 
+// Tabs opened before Focus Mode turns on never fire a fresh navigation
+// event, so they'd otherwise sit unblocked all session. Whenever Focus
+// Mode flips on (session start or manual toggle), check every open tab.
+async function sweepOpenTabs() {
+  const tabs = await chrome.tabs.query({});
+  for (const tab of tabs) {
+    if (tab.id !== undefined && tab.url && tab.url.startsWith("http")) {
+      // Force a re-check even if this tab/url was already classified earlier.
+      lastProcessedUrl.delete(tab.id);
+      scheduleClassification(tab.id, tab.url);
+    }
+  }
+}
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== "sync" || !changes.focusModeOn) return;
+  if (changes.focusModeOn.newValue === true && changes.focusModeOn.oldValue !== true) {
+    sweepOpenTabs();
+  }
+});
+
 chrome.tabs.onRemoved.addListener((tabId) => {
   lastProcessedUrl.delete(tabId);
   lastRelevantUrl.delete(tabId);
