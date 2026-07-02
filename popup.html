@@ -4,34 +4,46 @@
     <meta charset="UTF-8" />
     <title>Locked In</title>
     <style>
+      * { box-sizing: border-box; }
+
       body {
-        width: 260px;
+        width: 280px;
         padding: 20px;
-        font-family: sans-serif;
-        background: #1a1a2e;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         color: white;
+        background: radial-gradient(circle at 20% 0%, #2a2a52 0%, #1a1a2e 55%, #12101f 100%);
+        margin: 0;
       }
+
       h1 {
-        font-size: 18px;
-        margin-bottom: 16px;
+        font-size: 19px;
+        margin: 0 0 16px;
+        background: linear-gradient(90deg, #e74c3c, #f39c12);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        display: inline-block;
       }
+
       .toggle-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
         margin-bottom: 16px;
+        font-size: 13px;
       }
       .switch {
         position: relative;
         width: 44px;
         height: 24px;
+        flex-shrink: 0;
       }
       .switch input { opacity: 0; width: 0; height: 0; }
       .slider {
         position: absolute;
         cursor: pointer;
         inset: 0;
-        background-color: #555;
+        background: rgba(255, 255, 255, 0.15);
         border-radius: 24px;
         transition: 0.2s;
       }
@@ -46,20 +58,28 @@
         border-radius: 50%;
         transition: 0.2s;
       }
-      input:checked + .slider { background-color: #e74c3c; }
+      input:checked + .slider { background: linear-gradient(90deg, #e74c3c, #f39c12); }
       input:checked + .slider::before { transform: translateX(20px); }
 
       .session-box {
-        background: #25253f;
-        border-radius: 8px;
-        padding: 12px;
+        background: rgba(37, 37, 63, 0.55);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 16px;
         margin-bottom: 16px;
         text-align: center;
       }
       #countdown {
         font-size: 28px;
-        font-weight: bold;
-        margin-bottom: 8px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        margin-bottom: 10px;
+        background: linear-gradient(90deg, #e74c3c, #f39c12);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
       }
       .presets {
         display: flex;
@@ -69,27 +89,33 @@
       .presets button {
         flex: 1;
         padding: 8px 0;
-        background: #33334d;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         color: white;
-        border: none;
-        border-radius: 6px;
+        border-radius: 8px;
         font-size: 13px;
         cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease;
       }
       .presets button.selected {
-        background: #e74c3c;
+        background: linear-gradient(90deg, #e74c3c, #f39c12);
+        border-color: transparent;
       }
       #startSession, #stopSession {
         width: 100%;
-        padding: 10px;
+        padding: 11px;
         border: none;
-        border-radius: 8px;
+        border-radius: 10px;
         font-size: 14px;
+        font-weight: 600;
         cursor: pointer;
         color: white;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
       }
-      #startSession { background: #2ecc71; }
-      #stopSession { background: #555; }
+      #startSession { background: linear-gradient(90deg, #e74c3c, #f39c12); }
+      #startSession:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(231, 76, 60, 0.35); }
+      #stopSession { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1); }
+      #stopSession:hover { background: rgba(255, 255, 255, 0.14); }
 
       .mode-tabs {
         display: flex;
@@ -100,16 +126,17 @@
         flex: 1;
         padding: 6px 0;
         background: none;
-        border: 1px solid #444;
+        border: 1px solid rgba(255, 255, 255, 0.12);
         color: #aaa;
-        border-radius: 6px;
+        border-radius: 8px;
         font-size: 12px;
         cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
       }
       .mode-tab.selected {
-        background: #33334d;
+        background: rgba(255, 255, 255, 0.1);
         color: white;
-        border-color: #33334d;
+        border-color: rgba(255, 255, 255, 0.2);
       }
       .custom-duration {
         display: flex;
@@ -120,8 +147,10 @@
       .custom-duration input[type="number"] {
         width: 50px;
         padding: 8px;
-        border-radius: 6px;
-        border: none;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.06);
+        color: white;
         font-size: 13px;
         text-align: center;
       }
@@ -131,7 +160,7 @@
       }
       .settings-section {
         margin-top: 16px;
-        border-top: 1px solid #333;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
         padding-top: 12px;
       }
       .settings-toggle {
@@ -147,40 +176,50 @@
       #apiKeyInput {
         width: 100%;
         padding: 8px;
-        border-radius: 6px;
-        border: none;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.06);
+        color: white;
         font-size: 12px;
         margin-bottom: 8px;
         box-sizing: border-box;
       }
+      #apiKeyInput::placeholder { color: #8a8aa0; }
       #saveApiKey {
         width: 100%;
         padding: 8px;
-        background: #33334d;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         color: white;
-        border: none;
-        border-radius: 6px;
+        border-radius: 8px;
         font-size: 13px;
         cursor: pointer;
       }
+      #saveApiKey:hover { background: rgba(255, 255, 255, 0.14); }
       input[type="time"] {
         width: 100%;
         padding: 8px;
-        border-radius: 6px;
-        border: none;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.06);
+        color: white;
         font-size: 13px;
         margin-bottom: 8px;
         box-sizing: border-box;
+        color-scheme: dark;
       }
       #studyTopic {
         width: 100%;
         padding: 8px;
-        border-radius: 6px;
-        border: none;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.06);
+        color: white;
         font-size: 13px;
         margin-bottom: 8px;
         box-sizing: border-box;
       }
+      #studyTopic::placeholder { color: #8a8aa0; }
       #studyTopicDisplay {
         font-size: 13px;
         color: #ccc;
