@@ -18,11 +18,13 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.runtime.onStartup.addListener(updateBadge);
 
-// hostname|topic -> boolean (true = classified as distracting)
+// hostname|title|topic -> boolean (true = classified as distracting)
+// Keyed by title (not just hostname) so multi-page/SPA sites like YouTube or
+// Reddit get a fresh verdict per page instead of reusing the first page's answer.
 const classificationCache = new Map();
 
 async function classifyTabRelevance(hostname, title, topic, apiKey) {
-  const cacheKey = `${hostname}|${topic}`;
+  const cacheKey = `${hostname}|${title}|${topic}`;
   if (classificationCache.has(cacheKey)) {
     return classificationCache.get(cacheKey);
   }
@@ -49,13 +51,15 @@ async function classifyTabRelevance(hostname, title, topic, apiKey) {
     });
 
     if (!response.ok) {
-      console.warn("LockedIn: classification request failed", response.status);
+      const errBody = await response.text();
+      console.warn("LockedIn: classification request failed", response.status, errBody);
       return false;
     }
 
     const data = await response.json();
     const answer = (data.content?.[0]?.text || "").trim().toUpperCase();
     const isDistracting = answer.includes("DISTRACTING");
+    console.log("LockedIn: classified", hostname, "as", answer || "(empty response)");
     classificationCache.set(cacheKey, isDistracting);
     return isDistracting;
   } catch (err) {
@@ -74,10 +78,19 @@ async function maybeBlockTab(tabId, url) {
   lastProcessedUrl.set(tabId, url);
 
   const syncData = await chrome.storage.sync.get(["focusModeOn"]);
-  if (!syncData.focusModeOn) return;
+  if (!syncData.focusModeOn) {
+    console.log("LockedIn: skipped", url, "- Focus Mode is off");
+    return;
+  }
 
   const localData = await chrome.storage.local.get(["studyTopic", "anthropicApiKey"]);
-  if (!localData.studyTopic || !localData.anthropicApiKey) return;
+  if (!localData.studyTopic || !localData.anthropicApiKey) {
+    console.log("LockedIn: skipped", url, {
+      hasStudyTopic: !!localData.studyTopic,
+      hasApiKey: !!localData.anthropicApiKey,
+    });
+    return;
+  }
 
   let title = "";
   try {
