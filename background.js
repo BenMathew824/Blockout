@@ -68,33 +68,40 @@ async function classifyTabRelevance(hostname, title, topic, apiKey) {
   }
 }
 
-// tabId -> last URL we already classified, so re-firing events for the same
-// URL (e.g. onCompleted right after onHistoryStateUpdated) don't double-call the API.
+// tabId -> last URL we've already run a classification for, so re-firing
+// navigation events for the same final URL doesn't double-call the API.
 const lastProcessedUrl = new Map();
 
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+// tabId -> { url, timer, firstSeenAt }. SPA sites (YouTube, etc.) can update
+// document.title multiple times in quick succession after a route change
+// (e.g. a notification-count title flickers before the real video title
+// loads). Rather than guessing a fixed delay, reset the wait timer every
+// time the title actually changes, and only classify once it's been quiet.
+const pendingNav = new Map();
+const DEBOUNCE_MS = 700;
+const MAX_WAIT_MS = 4000;
+
+function scheduleClassification(tabId, url) {
+  const now = Date.now();
+  const existing = pendingNav.get(tabId);
+  const sameUrl = existing && existing.url === url;
+  const firstSeenAt = sameUrl ? existing.firstSeenAt : now;
+
+  if (existing) clearTimeout(existing.timer);
+
+  const elapsed = now - firstSeenAt;
+  const delay = elapsed >= MAX_WAIT_MS ? 0 : DEBOUNCE_MS;
+
+  const timer = setTimeout(() => runClassification(tabId), delay);
+  pendingNav.set(tabId, { url, timer, firstSeenAt });
 }
 
-// Polls tab.title until it stops changing (SPA sites like YouTube update the
-// title asynchronously after the URL changes) or we hit the attempt cap.
-async function getSettledTitle(tabId) {
-  let lastTitle = null;
-  for (let i = 0; i < 6; i++) {
-    let tab;
-    try {
-      tab = await chrome.tabs.get(tabId);
-    } catch (err) {
-      return null; // tab closed
-    }
-    if (tab.title === lastTitle) return tab.title || "";
-    lastTitle = tab.title;
-    await sleep(300);
-  }
-  return lastTitle || "";
-}
+async function runClassification(tabId) {
+  const pending = pendingNav.get(tabId);
+  if (!pending) return;
+  pendingNav.delete(tabId);
 
-async function maybeBlockTab(tabId, url) {
+  const url = pending.url;
   if (!url || !url.startsWith("http")) return;
   if (lastProcessedUrl.get(tabId) === url) return;
   lastProcessedUrl.set(tabId, url);
@@ -114,8 +121,13 @@ async function maybeBlockTab(tabId, url) {
     return;
   }
 
-  const title = await getSettledTitle(tabId);
-  if (title === null) return; // tab closed before we could read it
+  let title = "";
+  try {
+    const tab = await chrome.tabs.get(tabId);
+    title = tab.title || "";
+  } catch (err) {
+    return; // tab closed before we could read it
+  }
 
   const hostname = new URL(url).hostname;
   const isDistracting = await classifyTabRelevance(
@@ -132,19 +144,31 @@ async function maybeBlockTab(tabId, url) {
 
 // Full page loads (frameId 0 = main frame, not iframes).
 chrome.webNavigation.onCompleted.addListener((details) => {
-  if (details.frameId !== 0) return;
-  maybeBlockTab(details.tabId, details.url);
+  if (details.frameId !== 0 || !details.url) return;
+  scheduleClassification(details.tabId, details.url);
 });
 
 // SPA navigations (history.pushState/replaceState) — e.g. clicking between
 // videos on YouTube never triggers a full page load, only this event.
 chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
-  if (details.frameId !== 0) return;
-  maybeBlockTab(details.tabId, details.url);
+  if (details.frameId !== 0 || !details.url) return;
+  scheduleClassification(details.tabId, details.url);
+});
+
+// Fires whenever the tab's displayed title changes — used here purely to
+// reset the debounce timer while a classification is pending for that tab.
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (changeInfo.title === undefined) return;
+  const pending = pendingNav.get(tabId);
+  if (!pending) return;
+  scheduleClassification(tabId, pending.url);
 });
 
 chrome.tabs.onRemoved.addListener((tabId) => {
   lastProcessedUrl.delete(tabId);
+  const pending = pendingNav.get(tabId);
+  if (pending) clearTimeout(pending.timer);
+  pendingNav.delete(tabId);
 });
 
 function updateBadge() {
