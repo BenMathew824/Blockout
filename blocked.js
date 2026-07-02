@@ -55,6 +55,17 @@ chrome.storage.local.get(
   }
 );
 
-document.getElementById("back").addEventListener("click", () => {
-  history.length > 1 ? history.back() : window.close();
+const returnTo = params.get("returnTo");
+const backButton = document.getElementById("back");
+
+if (!returnTo) {
+  backButton.textContent = "✕ Close Tab";
+}
+
+backButton.addEventListener("click", () => {
+  if (returnTo) {
+    location.href = returnTo;
+  } else {
+    window.close();
+  }
 });

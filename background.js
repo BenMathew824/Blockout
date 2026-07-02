@@ -72,6 +72,11 @@ async function classifyTabRelevance(hostname, title, topic, apiKey) {
 // navigation events for the same final URL doesn't double-call the API.
 const lastProcessedUrl = new Map();
 
+// tabId -> last URL in that tab classified as RELEVANT, so the blocked page
+// can offer to send the user back to on-topic content instead of the page
+// that just got blocked (which is what browser history.back() would do).
+const lastRelevantUrl = new Map();
+
 // tabId -> { url, timer, firstSeenAt }. SPA sites (YouTube, etc.) can update
 // document.title multiple times in quick succession after a route change
 // (e.g. a notification-count title flickers before the real video title
@@ -137,8 +142,14 @@ async function runClassification(tabId) {
     localData.anthropicApiKey
   );
   if (isDistracting) {
-    const blockedUrl = chrome.runtime.getURL(`blocked.html?site=${encodeURIComponent(hostname)}`);
-    chrome.tabs.update(tabId, { url: blockedUrl });
+    const returnTo = lastRelevantUrl.get(tabId);
+    let blockedUrl = `blocked.html?site=${encodeURIComponent(hostname)}`;
+    if (returnTo) {
+      blockedUrl += `&returnTo=${encodeURIComponent(returnTo)}`;
+    }
+    chrome.tabs.update(tabId, { url: chrome.runtime.getURL(blockedUrl) });
+  } else {
+    lastRelevantUrl.set(tabId, url);
   }
 }
 
@@ -166,6 +177,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
 
 chrome.tabs.onRemoved.addListener((tabId) => {
   lastProcessedUrl.delete(tabId);
+  lastRelevantUrl.delete(tabId);
   const pending = pendingNav.get(tabId);
   if (pending) clearTimeout(pending.timer);
   pendingNav.delete(tabId);
