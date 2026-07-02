@@ -56,6 +56,7 @@ chrome.storage.local.get(
 );
 
 const returnTo = params.get("returnTo");
+const blockedFrom = params.get("blockedFrom");
 const backButton = document.getElementById("back");
 
 if (!returnTo) {
@@ -72,12 +73,15 @@ backButton.addEventListener("click", () => {
 
 // If the session ends (or Focus Mode is turned off) while this tab is still
 // showing the block screen, release it automatically instead of leaving the
-// user stuck here with no way of knowing the block is no longer active.
+// user stuck here. Once Focus Mode is off there's no reason to withhold the
+// page that got blocked, so restore that page rather than the last on-topic one.
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "sync" || !changes.focusModeOn) return;
   if (changes.focusModeOn.newValue !== false) return;
 
-  if (returnTo) {
+  if (blockedFrom) {
+    location.href = blockedFrom;
+  } else if (returnTo) {
     location.href = returnTo;
   } else {
     document.querySelector("h1").textContent = "Session Ended";

@@ -143,7 +143,7 @@ async function runClassification(tabId) {
   );
   if (isDistracting) {
     const returnTo = lastRelevantUrl.get(tabId);
-    let blockedUrl = `blocked.html?site=${encodeURIComponent(hostname)}`;
+    let blockedUrl = `blocked.html?site=${encodeURIComponent(hostname)}&blockedFrom=${encodeURIComponent(url)}`;
     if (returnTo) {
       blockedUrl += `&returnTo=${encodeURIComponent(returnTo)}`;
     }
