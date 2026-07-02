@@ -190,8 +190,14 @@ function updateBadge() {
 }
 
 function startSession(minutes, topic) {
-  const endTime = Date.now() + minutes * 60 * 1000;
-  chrome.storage.local.set({ sessionActive: true, sessionEndTime: endTime, studyTopic: topic || "" });
+  const startTime = Date.now();
+  const endTime = startTime + minutes * 60 * 1000;
+  chrome.storage.local.set({
+    sessionActive: true,
+    sessionStartTime: startTime,
+    sessionEndTime: endTime,
+    studyTopic: topic || "",
+  });
   chrome.storage.sync.set({ focusModeOn: true });
   chrome.alarms.create(SESSION_END_ALARM, { when: endTime });
   chrome.alarms.create(SESSION_TICK_ALARM, { periodInMinutes: 1 });
@@ -201,7 +207,7 @@ function startSession(minutes, topic) {
 function stopSession() {
   chrome.alarms.clear(SESSION_END_ALARM);
   chrome.alarms.clear(SESSION_TICK_ALARM);
-  chrome.storage.local.set({ sessionActive: false, sessionEndTime: null });
+  chrome.storage.local.set({ sessionActive: false, sessionStartTime: null, sessionEndTime: null });
   chrome.storage.sync.set({ focusModeOn: false });
   chrome.action.setBadgeText({ text: "" });
 }

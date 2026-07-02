@@ -4,46 +4,205 @@
     <meta charset="UTF-8" />
     <title>Blocked — Locked In</title>
     <style>
+      * { box-sizing: border-box; }
+
       body {
-        font-family: sans-serif;
-        background: #1a1a2e;
-        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        margin: 0;
+        height: 100vh;
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        height: 100vh;
-        margin: 0;
+        color: white;
+        background: radial-gradient(circle at 20% 20%, #2a2a52 0%, #1a1a2e 45%, #12101f 100%);
+        overflow: hidden;
+        position: relative;
+      }
+
+      .blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(70px);
+        opacity: 0.35;
+        z-index: 0;
+      }
+      .blob.one {
+        width: 320px;
+        height: 320px;
+        background: #e74c3c;
+        top: -80px;
+        left: -80px;
+        animation: float 10s ease-in-out infinite;
+      }
+      .blob.two {
+        width: 280px;
+        height: 280px;
+        background: #6c5ce7;
+        bottom: -100px;
+        right: -60px;
+        animation: float 12s ease-in-out infinite reverse;
+      }
+      @keyframes float {
+        0%, 100% { transform: translate(0, 0); }
+        50% { transform: translate(30px, 20px); }
+      }
+
+      .card {
+        position: relative;
+        z-index: 1;
+        width: 380px;
+        max-width: 90vw;
+        padding: 40px 32px;
+        border-radius: 24px;
+        background: rgba(37, 37, 63, 0.55);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         text-align: center;
       }
-      h1 { font-size: 28px; margin-bottom: 8px; }
-      p { color: #ccc; margin-bottom: 24px; }
-      #site { color: #e74c3c; font-weight: bold; }
-      #topic {
-        background: #25253f;
-        padding: 10px 16px;
-        border-radius: 8px;
-        margin-bottom: 24px;
-        font-size: 14px;
-        display: none;
+
+      .lock-ring {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 20px;
       }
+      .lock-ring svg { transform: rotate(-90deg); }
+      .ring-bg {
+        fill: none;
+        stroke: rgba(255, 255, 255, 0.08);
+        stroke-width: 6;
+      }
+      .ring-progress {
+        fill: none;
+        stroke: url(#ringGradient);
+        stroke-width: 6;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 1s linear;
+      }
+      .lock-icon {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        animation: pulse 2.5s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.08); }
+      }
+
+      h1 {
+        font-size: 24px;
+        margin: 0 0 6px;
+        background: linear-gradient(90deg, #e74c3c, #f39c12);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .site-pill {
+        display: inline-block;
+        background: rgba(231, 76, 60, 0.15);
+        border: 1px solid rgba(231, 76, 60, 0.4);
+        color: #ff8a75;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 999px;
+        margin-bottom: 14px;
+        word-break: break-all;
+      }
+
+      p.subtitle {
+        color: #b8b8c8;
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 0 0 20px;
+      }
+
+      #topic {
+        display: none;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 10px 16px;
+        border-radius: 12px;
+        margin-bottom: 16px;
+        font-size: 13px;
+      }
+      #topic strong { color: #fff; }
+
+      #countdownBox {
+        display: none;
+        margin-bottom: 24px;
+      }
+      .countdown-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #8a8aa0;
+        margin-bottom: 4px;
+      }
+      #countdown {
+        font-size: 22px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+
       button {
-        padding: 10px 20px;
-        background: #e74c3c;
+        width: 100%;
+        padding: 13px 20px;
+        background: linear-gradient(90deg, #e74c3c, #f39c12);
         color: white;
         border: none;
-        border-radius: 8px;
+        border-radius: 12px;
         font-size: 14px;
+        font-weight: 600;
         cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
       }
-      button:hover { opacity: 0.9; }
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(231, 76, 60, 0.35);
+      }
+      button:active { transform: translateY(0); }
     </style>
   </head>
   <body>
-    <h1>🔒 You're Locked In</h1>
-    <p><span id="site"></span> was flagged as off-topic and blocked while Focus Mode is on.</p>
-    <div id="topic">📚 You said you're focusing on: <strong id="topicText"></strong></div>
-    <button id="back">Go Back</button>
+    <div class="blob one"></div>
+    <div class="blob two"></div>
+
+    <div class="card">
+      <div class="lock-ring">
+        <svg width="120" height="120">
+          <defs>
+            <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#e74c3c" />
+              <stop offset="100%" stop-color="#f39c12" />
+            </linearGradient>
+          </defs>
+          <circle class="ring-bg" cx="60" cy="60" r="52" />
+          <circle class="ring-progress" id="ringProgress" cx="60" cy="60" r="52" />
+        </svg>
+        <div class="lock-icon">🔒</div>
+      </div>
+
+      <h1>You're Locked In</h1>
+      <div class="site-pill" id="site"></div>
+      <p class="subtitle">This page was flagged as off-topic while Focus Mode is on.</p>
+
+      <div id="topic">📚 You said you're focusing on: <strong id="topicText"></strong></div>
+
+      <div id="countdownBox">
+        <div class="countdown-label">Session ends in</div>
+        <div id="countdown">--:--</div>
+      </div>
+
+      <button id="back">← Back to what you were doing</button>
+    </div>
 
     <script src="blocked.js"></script>
   </body>
