@@ -230,6 +230,12 @@
         font-size: 13px;
         cursor: pointer;
       }
+      .field-error {
+        color: #ff8a75;
+        font-size: 11px;
+        margin: 2px 2px 4px;
+        min-height: 14px;
+      }
 
       .stat-row {
         display: flex;
@@ -369,6 +375,7 @@
           <input type="text" id="newAllowSite" placeholder="docs.google.com" />
           <button id="addAllowSite">Add</button>
         </div>
+        <div id="allowSiteError" class="field-error"></div>
       </div>
     </div>
 

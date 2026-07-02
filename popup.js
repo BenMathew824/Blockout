@@ -157,10 +157,23 @@ document.getElementById("saveApiKey").addEventListener("click", () => {
   });
 });
 
+const allowSiteError = document.getElementById("allowSiteError");
+const DOMAIN_REGEX = /^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/i;
+
+newAllowSiteInput.addEventListener("input", () => {
+  allowSiteError.textContent = "";
+});
+
 document.getElementById("addAllowSite").addEventListener("click", () => {
   const raw = newAllowSiteInput.value.trim().toLowerCase();
+  allowSiteError.textContent = "";
   if (!raw) return;
-  const hostname = raw.replace(/^https?:\/\//, "").split("/")[0];
+  const hostname = raw.replace(/^https?:\/\//, "").split("/")[0].split(":")[0];
+
+  if (!DOMAIN_REGEX.test(hostname)) {
+    allowSiteError.textContent = "Enter a valid domain, e.g. docs.google.com";
+    return;
+  }
 
   chrome.storage.sync.get(["allowlist"], (data) => {
     const allowlist = data.allowlist || [];
