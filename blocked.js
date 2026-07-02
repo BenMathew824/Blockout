@@ -69,3 +69,19 @@ backButton.addEventListener("click", () => {
     window.close();
   }
 });
+
+// If the session ends (or Focus Mode is turned off) while this tab is still
+// showing the block screen, release it automatically instead of leaving the
+// user stuck here with no way of knowing the block is no longer active.
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== "sync" || !changes.focusModeOn) return;
+  if (changes.focusModeOn.newValue !== false) return;
+
+  if (returnTo) {
+    location.href = returnTo;
+  } else {
+    document.querySelector("h1").textContent = "Session Ended";
+    document.querySelector(".subtitle").textContent = "Focus Mode is off — you're free to browse.";
+    backButton.textContent = "✕ Close Tab";
+  }
+});
