@@ -3,7 +3,8 @@
 
 -- user_id defaults to auth.uid() so neither the extension's REST inserts nor
 -- the website's supabase-js inserts need to pass it explicitly.
-create table public.allowlist (
+-- Safe to re-run: uses IF NOT EXISTS / DROP-then-CREATE throughout.
+create table if not exists public.allowlist (
   id          uuid primary key default gen_random_uuid(),
   user_id     uuid not null default auth.uid() references auth.users(id) on delete cascade,
   hostname    text not null,
@@ -11,7 +12,7 @@ create table public.allowlist (
   unique (user_id, hostname)
 );
 
-create table public.site_blocks (
+create table if not exists public.site_blocks (
   id              uuid primary key default gen_random_uuid(),
   user_id         uuid not null default auth.uid() references auth.users(id) on delete cascade,
   hostname        text not null,
@@ -23,14 +24,16 @@ create table public.site_blocks (
 alter table public.allowlist enable row level security;
 alter table public.site_blocks enable row level security;
 
+drop policy if exists "own allowlist rows" on public.allowlist;
 create policy "own allowlist rows" on public.allowlist
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+drop policy if exists "own site_blocks rows" on public.site_blocks;
 create policy "own site_blocks rows" on public.site_blocks
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- Atomic increment (avoids read-modify-write races). Called via:
--- POST /rest/v1/rpc/increment_block_count  body: {"p_hostname": "example.com"}
+-- POST /rest/v1/rpc/increment_block_count with p_hostname set to the hostname string.
 create or replace function public.increment_block_count(p_hostname text)
 returns void
 language sql
@@ -43,7 +46,7 @@ as $$
                 last_blocked_at = now();
 $$;
 
--- Called via: POST /rest/v1/rpc/reset_site_blocks  body: {}
+-- Called via: POST /rest/v1/rpc/reset_site_blocks with an empty body.
 create or replace function public.reset_site_blocks()
 returns void
 language sql
