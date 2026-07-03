@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sign In — Locked In</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="auth-page">
+    <div class="card auth-card">
+      <a href="index.html" class="logo-link">
+        <h1>🔒 Locked In</h1>
+      </a>
+
+      <div class="mode-tabs">
+        <button class="mode-tab selected" data-mode="signin">Sign In</button>
+        <button class="mode-tab" data-mode="signup">Sign Up</button>
+      </div>
+
+      <input type="email" id="email" placeholder="Email" />
+      <input type="password" id="password" placeholder="Password" />
+      <div id="error" class="field-error"></div>
+      <button id="submit" class="btn-primary" style="width: 100%">Sign In</button>
+    </div>
+
+    <script type="module" src="auth.js"></script>
+  </body>
+</html>

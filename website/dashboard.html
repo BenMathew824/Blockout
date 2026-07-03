@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dashboard — Locked In</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="dashboard">
+      <div class="dashboard-header">
+        <a href="index.html" class="logo">🔒 Locked In</a>
+        <div>
+          <span class="user-email" id="userEmail"></span>
+          <button id="signOut" class="btn-secondary" style="padding: 8px 16px; font-size: 13px;">Sign Out</button>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="card">
+          <h2>Total Blocked</h2>
+          <div class="stat-total gradient-text" id="totalBlocks">0</div>
+          <div id="topSites"></div>
+          <button id="resetStats" class="btn-secondary" style="width: 100%; margin-top: 12px; padding: 10px;">Reset Stats</button>
+        </div>
+
+        <div class="card">
+          <h2>Always Allow</h2>
+          <ul id="allowlistList" class="chip-list"></ul>
+          <div class="add-row">
+            <input type="text" id="newSite" placeholder="docs.google.com" />
+            <button id="addSite">Add</button>
+          </div>
+          <div id="addSiteError" class="field-error"></div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="dashboard.js"></script>
+  </body>
+</html>

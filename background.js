@@ -1,5 +1,8 @@
+importScripts("config.js", "auth.js", "sync.js");
+
 const SESSION_END_ALARM = "focusSessionEnd";
 const SESSION_TICK_ALARM = "focusSessionTick";
+const SYNC_FLUSH_ALARM = "syncFlush";
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.sync.get(["focusModeOn", "allowlist"], (data) => {
@@ -19,6 +22,7 @@ chrome.runtime.onInstalled.addListener(() => {
     }
   });
   updateBadge();
+  chrome.alarms.create(SYNC_FLUSH_ALARM, { periodInMinutes: 5 });
   console.log("LockedIn installed and ready.");
 });
 
@@ -94,6 +98,10 @@ async function recordBlock(hostname) {
   }
 
   await chrome.storage.local.set(updates);
+
+  // Best-effort mirror to the backend if signed in — never blocks or
+  // affects the local write above, which is what the extension itself relies on.
+  syncBlockEvent(hostname);
 }
 
 // tabId -> last URL we've already run a classification for, so re-firing
@@ -286,6 +294,8 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     stopSession();
   } else if (alarm.name === SESSION_TICK_ALARM) {
     updateBadge();
+  } else if (alarm.name === SYNC_FLUSH_ALARM) {
+    flushPendingQueue();
   }
 });
 
@@ -296,6 +306,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.type === "stopSession") {
     stopSession();
     sendResponse({ ok: true });
+  } else if (message.type === "GET_VALID_SESSION") {
+    // All token refresh happens here, centrally — Supabase rotates refresh
+    // tokens on use, so letting the popup refresh independently could race
+    // with this and revoke each other's session.
+    refreshIfNeeded().then((session) => sendResponse({ session }));
+    return true;
   }
   return true;
 });

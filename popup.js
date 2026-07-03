@@ -18,6 +18,12 @@ const allowlistList = document.getElementById("allowlistList");
 const newAllowSiteInput = document.getElementById("newAllowSite");
 const statsTotalEl = document.getElementById("statsTotal");
 const statsTopSitesEl = document.getElementById("statsTopSites");
+const accountSignedOut = document.getElementById("accountSignedOut");
+const accountSignedIn = document.getElementById("accountSignedIn");
+const accountEmailInput = document.getElementById("accountEmailInput");
+const accountPasswordInput = document.getElementById("accountPasswordInput");
+const accountEmailDisplay = document.getElementById("accountEmail");
+const accountError = document.getElementById("accountError");
 
 let sessionMode = "duration";
 let countdownInterval = null;
@@ -92,6 +98,7 @@ function renderAllowlist(allowlist) {
     removeBtn.addEventListener("click", () => {
       const updated = allowlist.filter((s) => s !== site);
       chrome.storage.sync.set({ allowlist: updated }, () => renderAllowlist(updated));
+      pushAllowlistRemove(site);
     });
     li.appendChild(label);
     li.appendChild(removeBtn);
@@ -128,6 +135,29 @@ function renderStats(lifetimeStats) {
   });
 }
 
+function renderAccountState(session) {
+  if (session) {
+    accountSignedOut.style.display = "none";
+    accountSignedIn.style.display = "block";
+    accountEmailDisplay.textContent = `Signed in as ${session.user?.email || ""}`;
+  } else {
+    accountSignedOut.style.display = "block";
+    accountSignedIn.style.display = "none";
+  }
+}
+
+async function loadAccountAndSync() {
+  const session = await getStoredSession();
+  renderAccountState(session);
+  if (!session) return;
+
+  // Flush any not-yet-sent local writes before pulling, so a stale pull
+  // can't clobber an addition/removal made while offline.
+  await flushPendingQueue();
+  const allowlist = await pullAndReplaceAllowlist();
+  if (allowlist) renderAllowlist(allowlist);
+}
+
 function load() {
   chrome.storage.sync.get(["focusModeOn", "allowlist"], (data) => {
     focusToggle.checked = !!data.focusModeOn;
@@ -139,6 +169,7 @@ function load() {
     renderStats(data.lifetimeStats);
   });
   renderSessionState();
+  loadAccountAndSync();
 }
 
 document.querySelectorAll(".settings-toggle").forEach((btn) => {
@@ -180,9 +211,51 @@ document.getElementById("addAllowSite").addEventListener("click", () => {
     if (!allowlist.includes(hostname)) {
       allowlist.push(hostname);
       chrome.storage.sync.set({ allowlist }, () => renderAllowlist(allowlist));
+      pushAllowlistAdd(hostname);
     }
     newAllowSiteInput.value = "";
   });
+});
+
+document.getElementById("accountSignIn").addEventListener("click", async () => {
+  accountError.textContent = "";
+  const email = accountEmailInput.value.trim();
+  const password = accountPasswordInput.value;
+  if (!email || !password) return;
+  try {
+    const session = await signIn(email, password);
+    accountPasswordInput.value = "";
+    renderAccountState(session);
+    await loadAccountAndSync();
+  } catch (err) {
+    accountError.textContent = err.message;
+  }
+});
+
+document.getElementById("accountSignUp").addEventListener("click", async () => {
+  accountError.textContent = "";
+  const email = accountEmailInput.value.trim();
+  const password = accountPasswordInput.value;
+  if (!email || !password) return;
+  try {
+    const result = await signUp(email, password);
+    accountPasswordInput.value = "";
+    if (result.access_token) {
+      renderAccountState(await getStoredSession());
+      await loadAccountAndSync();
+    } else {
+      accountError.textContent = "Check your email to confirm your account, then sign in.";
+    }
+  } catch (err) {
+    accountError.textContent = err.message;
+  }
+});
+
+document.getElementById("accountSignOut").addEventListener("click", async () => {
+  await signOut();
+  accountEmailInput.value = "";
+  accountPasswordInput.value = "";
+  renderAccountState(null);
 });
 
 document.getElementById("resetStats").addEventListener("click", () => {
