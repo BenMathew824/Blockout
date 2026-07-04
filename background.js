@@ -89,13 +89,24 @@ function matchesAllowlist(hostname, allowlist) {
 // change event to reset the timer. This is a last-chance safety net.
 const GENERIC_NOTIFICATION_TITLE = /^\(\d[\d,]*\)\s*[A-Za-z]+$/;
 
+// focusTabTitle.js prepends "(mm:ss) " (or "(h:mm:ss) ") to document.title
+// while a session is running, so tab.title read from the tabs API is no
+// longer the page's real title — strip our own prefix back off before using
+// it for anything classification-related, or every title looks polluted and
+// the generic-placeholder check above stops matching real placeholders.
+const TAB_TITLE_COUNTDOWN_PREFIX = /^\(\d{1,2}:\d{2}(:\d{2})?\)\s*/;
+
+function stripCountdownPrefix(title) {
+  return (title || "").replace(TAB_TITLE_COUNTDOWN_PREFIX, "");
+}
+
 async function getSettledTitle(tabId, initialTitle) {
   let title = initialTitle;
   for (let i = 0; i < 3 && GENERIC_NOTIFICATION_TITLE.test(title); i++) {
     await new Promise((resolve) => setTimeout(resolve, 800));
     try {
       const tab = await chrome.tabs.get(tabId);
-      title = tab.title || title;
+      title = stripCountdownPrefix(tab.title) || title;
     } catch (err) {
       return title; // tab closed — just use whatever we had
     }
@@ -193,7 +204,7 @@ async function runClassification(tabId) {
   let title = "";
   try {
     const tab = await chrome.tabs.get(tabId);
-    title = tab.title || "";
+    title = stripCountdownPrefix(tab.title);
   } catch (err) {
     return; // tab closed before we could read it
   }
@@ -235,8 +246,18 @@ chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
 
 // Fires whenever the tab's displayed title changes — used here purely to
 // reset the debounce timer while a classification is pending for that tab.
+// focusTabTitle.js rewrites the title every second to show the session
+// countdown, so most "changes" here are just our own tick, not the page's
+// title actually settling — ignore those so the debounce isn't kept alive
+// indefinitely and forced into the slower MAX_WAIT_MS fallback every time.
+const lastCleanTitleByTab = new Map();
+
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   if (changeInfo.title === undefined) return;
+  const cleanTitle = stripCountdownPrefix(changeInfo.title);
+  if (lastCleanTitleByTab.get(tabId) === cleanTitle) return;
+  lastCleanTitleByTab.set(tabId, cleanTitle);
+
   const pending = pendingNav.get(tabId);
   if (!pending) return;
   scheduleClassification(tabId, pending.url);
@@ -266,6 +287,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
 chrome.tabs.onRemoved.addListener((tabId) => {
   lastProcessedUrl.delete(tabId);
   lastRelevantUrl.delete(tabId);
+  lastCleanTitleByTab.delete(tabId);
   const pending = pendingNav.get(tabId);
   if (pending) clearTimeout(pending.timer);
   pendingNav.delete(tabId);
