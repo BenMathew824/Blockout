@@ -105,6 +105,18 @@ input::placeholder {
   color: #8a8aa0;
 }
 
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.logo-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  display: block;
+}
+
 /* Nav bar (landing page) */
 .navbar {
   position: relative;
@@ -427,10 +439,13 @@ input::placeholder {
 }
 .auth-card .logo-link {
   display: block;
-  text-align: center;
   margin-bottom: 24px;
 }
 .auth-card h1 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   font-size: 22px;
   margin: 0;
 }
