@@ -53,7 +53,7 @@ function startCountdown(sessionEndTime) {
 
 function renderSessionBlockCount(sessionStats) {
   const count = sessionStats?.totalBlocks || 0;
-  sessionBlockCountEl.textContent = `🚫 ${count} blocked this session`;
+  document.getElementById("sessionBlockCountText").textContent = `${count} blocked this session`;
 }
 
 function renderSessionState() {
@@ -64,7 +64,8 @@ function renderSessionState() {
         sessionActiveBox.style.display = "block";
         sessionSetupBox.style.display = "none";
         toggleRow.style.display = "none";
-        studyTopicDisplay.textContent = data.studyTopic ? `📚 ${data.studyTopic}` : "";
+        studyTopicDisplay.style.display = data.studyTopic ? "flex" : "none";
+        document.getElementById("studyTopicText").textContent = data.studyTopic || "";
         renderSessionBlockCount(data.sessionStats);
         startCountdown(data.sessionEndTime);
       } else {

@@ -18,12 +18,18 @@
       h1 {
         font-size: 19px;
         margin: 0 0 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .logo-icon { width: 22px; height: 22px; border-radius: 6px; display: block; }
+      .gradient-text {
         background: linear-gradient(90deg, #e74c3c, #f39c12);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
-        display: inline-block;
       }
+      .icon { vertical-align: middle; flex-shrink: 0; }
 
       .toggle-row {
         display: flex;
@@ -85,6 +91,10 @@
         font-size: 12px;
         color: #8a8aa0;
         margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
       }
       .presets {
         display: flex;
@@ -176,6 +186,9 @@
         cursor: pointer;
         padding: 0;
         margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
       }
       .settings-body { display: none; }
 
@@ -309,6 +322,10 @@
         font-size: 13px;
         color: #ccc;
         margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
       }
 
       #accountSignedOut p {
@@ -345,12 +362,18 @@
     </style>
   </head>
   <body>
-    <h1>🔒 Locked In</h1>
+    <h1><img src="icons/icon32.png" alt="" class="logo-icon" /><span class="gradient-text">Locked In</span></h1>
 
     <div id="sessionActiveBox" class="session-box" style="display: none">
-      <div id="studyTopicDisplay"></div>
+      <div id="studyTopicDisplay">
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6c-2-1.5-5-1.5-8-1v13c3-.5 6-.5 8 1c2-1.5 5-1.5 8-1V5c-3-.5-6-.5-8 1Z"/><path d="M12 6v13"/></svg>
+        <span id="studyTopicText"></span>
+      </div>
       <div id="countdown">25:00</div>
-      <div id="sessionBlockCount"></div>
+      <div id="sessionBlockCount">
+        <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M6.5 6.5l11 11"/></svg>
+        <span id="sessionBlockCountText"></span>
+      </div>
       <button id="stopSession">End Session Early</button>
     </div>
 
@@ -392,7 +415,7 @@
     </div>
 
     <div class="settings-section">
-      <button class="settings-toggle" data-target="accountBody">👤 Account ▾</button>
+      <button class="settings-toggle" data-target="accountBody"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg> Account ▾</button>
       <div id="accountBody" class="settings-body">
         <div id="accountSignedOut">
           <p>Sign in on the Locked In website to sync your stats and Always Allow list here.</p>
@@ -406,7 +429,7 @@
     </div>
 
     <div class="settings-section">
-      <button class="settings-toggle" data-target="aiSettingsBody">⚙ Anthropic API Key ▾</button>
+      <button class="settings-toggle" data-target="aiSettingsBody"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82A1.65 1.65 0 0 0 3 13.09H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg> Anthropic API Key ▾</button>
       <div id="aiSettingsBody" class="settings-body">
         <input type="password" id="apiKeyInput" placeholder="Anthropic API key (sk-ant-...)" />
         <button id="saveApiKey">Save Key</button>
@@ -414,7 +437,7 @@
     </div>
 
     <div class="settings-section">
-      <button class="settings-toggle" data-target="allowlistBody">✅ Always Allow ▾</button>
+      <button class="settings-toggle" data-target="allowlistBody"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg> Always Allow ▾</button>
       <div id="allowlistBody" class="settings-body">
         <ul id="allowlistList" class="chip-list"></ul>
         <div class="add-row">
@@ -426,7 +449,7 @@
     </div>
 
     <div class="settings-section">
-      <button class="settings-toggle" data-target="statsBody">📊 Stats ▾</button>
+      <button class="settings-toggle" data-target="statsBody"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20V11M12 20V4M18 20v-6"/></svg> Stats ▾</button>
       <div id="statsBody" class="settings-body">
         <div class="stat-row">
           <span>Total blocked</span>

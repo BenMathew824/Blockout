@@ -3,7 +3,7 @@
 // this only works if the extension's manifest.json lists this site's origin
 // under externally_connectable.matches, and EXTENSION_ID below matches the
 // real installed extension's ID (chrome://extensions -> Locked In -> ID).
-export const EXTENSION_ID = "YOUR-EXTENSION-ID";
+export const EXTENSION_ID = "caahmbjoediomjiacdepnacalbmnnkia";
 
 function hasExtensionMessaging() {
   return typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.sendMessage;
