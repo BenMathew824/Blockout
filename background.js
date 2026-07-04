@@ -212,7 +212,9 @@ async function runClassification(tabId) {
     if (returnTo) {
       blockedUrl += `&returnTo=${encodeURIComponent(returnTo)}`;
     }
-    chrome.tabs.update(tabId, { url: chrome.runtime.getURL(blockedUrl) });
+    // The tab may have been closed during the classification delay above —
+    // ignore that case rather than letting it surface as an unhandled rejection.
+    chrome.tabs.update(tabId, { url: chrome.runtime.getURL(blockedUrl) }).catch(() => {});
   } else {
     lastRelevantUrl.set(tabId, url);
   }
