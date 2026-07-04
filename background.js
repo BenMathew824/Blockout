@@ -332,17 +332,25 @@ function startSession(minutes, topic) {
   updateBadge();
 }
 
-function stopSession() {
+function stopSession(showEndNotification) {
   chrome.alarms.clear(SESSION_END_ALARM);
   chrome.alarms.clear(SESSION_TICK_ALARM);
   chrome.storage.local.set({ sessionActive: false, sessionStartTime: null, sessionEndTime: null });
   chrome.storage.sync.set({ focusModeOn: false });
   chrome.action.setBadgeText({ text: "" });
+  if (showEndNotification) {
+    chrome.notifications.create({
+      type: "basic",
+      iconUrl: "icons/icon128.png",
+      title: "Time's up!",
+      message: "Your focus session has ended — nice work staying locked in.",
+    });
+  }
 }
 
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === SESSION_END_ALARM) {
-    stopSession();
+    stopSession(true);
   } else if (alarm.name === SESSION_TICK_ALARM) {
     updateBadge();
   } else if (alarm.name === SYNC_FLUSH_ALARM) {
