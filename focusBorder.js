@@ -26,13 +26,24 @@
     overlay.style.display = visible ? "block" : "none";
   }
 
-  chrome.storage.sync.get(["focusModeOn"], (data) => {
-    setVisible(!!data.focusModeOn);
-  });
+  // Reloading the extension leaves any already-open tab's content script
+  // holding a dead reference to the old extension context — calling a
+  // chrome.* API from it throws "Extension context invalidated". Only the
+  // tab itself being refreshed fixes that, so just skip quietly here.
+  if (!(chrome.runtime && chrome.runtime.id)) return;
 
-  chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === "sync" && changes.focusModeOn) {
-      setVisible(!!changes.focusModeOn.newValue);
-    }
-  });
+  try {
+    chrome.storage.sync.get(["focusModeOn"], (data) => {
+      if (chrome.runtime.lastError) return;
+      setVisible(!!data.focusModeOn);
+    });
+
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "sync" && changes.focusModeOn) {
+        setVisible(!!changes.focusModeOn.newValue);
+      }
+    });
+  } catch (err) {
+    // extension context invalidated between the check above and this call
+  }
 })();
