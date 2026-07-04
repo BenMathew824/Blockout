@@ -11,8 +11,8 @@
     overlay.style.cssText = `
       position: fixed;
       inset: 0;
-      border: 6px solid transparent;
-      border-image: linear-gradient(90deg, #e74c3c, #f39c12) 1;
+      border: 3px solid transparent;
+      border-image: linear-gradient(90deg, rgba(231, 76, 60, 0.55), rgba(243, 156, 18, 0.55)) 1;
       pointer-events: none;
       z-index: 2147483647;
       display: none;
