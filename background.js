@@ -82,6 +82,27 @@ function matchesAllowlist(hostname, allowlist) {
   return allowlist.some((site) => hostname === site || hostname.endsWith("." + site));
 }
 
+// Matches bare "(123) SiteName" titles — the transient notification-badge
+// placeholder some sites (YouTube, Gmail) show before the real page title
+// loads. The debounce in scheduleClassification catches most of these, but
+// occasionally the title settles on exactly this placeholder with no further
+// change event to reset the timer. This is a last-chance safety net.
+const GENERIC_NOTIFICATION_TITLE = /^\(\d[\d,]*\)\s*[A-Za-z]+$/;
+
+async function getSettledTitle(tabId, initialTitle) {
+  let title = initialTitle;
+  for (let i = 0; i < 3 && GENERIC_NOTIFICATION_TITLE.test(title); i++) {
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      const tab = await chrome.tabs.get(tabId);
+      title = tab.title || title;
+    } catch (err) {
+      return title; // tab closed — just use whatever we had
+    }
+  }
+  return title;
+}
+
 async function recordBlock(hostname) {
   const data = await chrome.storage.local.get(["lifetimeStats", "sessionStats"]);
   const lifetimeStats = data.lifetimeStats || { totalBlocks: 0, siteCounts: {} };
@@ -176,6 +197,7 @@ async function runClassification(tabId) {
   } catch (err) {
     return; // tab closed before we could read it
   }
+  title = await getSettledTitle(tabId, title);
 
   const isDistracting = await classifyTabRelevance(
     hostname,
