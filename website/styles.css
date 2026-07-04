@@ -513,6 +513,19 @@ input::placeholder {
   color: #aaa;
   margin: 0 0 16px;
 }
+.card h2.friendly-heading {
+  font-size: 18px;
+  text-transform: none;
+  letter-spacing: normal;
+  color: white;
+  margin-bottom: 6px;
+}
+.card-subtitle {
+  font-size: 13px;
+  color: #8a8aa0;
+  margin: 0 0 16px;
+  line-height: 1.4;
+}
 
 .stat-total {
   font-size: 40px;
