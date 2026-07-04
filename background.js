@@ -82,6 +82,8 @@ function matchesAllowlist(hostname, allowlist) {
   return allowlist.some((site) => hostname === site || hostname.endsWith("." + site));
 }
 
+const YOUTUBE_HOSTNAME = /(^|\.)youtube\.com$/;
+
 // Matches bare "(123) SiteName" titles — the transient notification-badge
 // placeholder some sites (YouTube, Gmail) show before the real page title
 // loads. The debounce in scheduleClassification catches most of these, but
@@ -218,7 +220,10 @@ async function runClassification(tabId) {
   );
   if (isDistracting) {
     recordBlock(hostname);
-    const returnTo = lastRelevantUrl.get(tabId);
+    // "Return" would just send them back to the YouTube homepage/previous
+    // video, not to actual on-topic content — offer "Close Tab" instead,
+    // same as any other site with no relevant page to go back to.
+    const returnTo = YOUTUBE_HOSTNAME.test(hostname) ? null : lastRelevantUrl.get(tabId);
     let blockedUrl = `blocked.html?site=${encodeURIComponent(hostname)}&blockedFrom=${encodeURIComponent(url)}`;
     if (returnTo) {
       blockedUrl += `&returnTo=${encodeURIComponent(returnTo)}`;
