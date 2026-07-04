@@ -24,7 +24,7 @@ const PRESET_TOOLS = [
   { name: "Wikipedia", hostname: "wikipedia.org" },
   { name: "ChatGPT", hostname: "chat.openai.com" },
   { name: "Coursera", hostname: "coursera.org" },
-  { name: "Duolingo", hostname: "duolingo.com" },
+  { name: "Google Calendar", hostname: "calendar.google.com" },
   { name: "Desmos", hostname: "desmos.com" },
   { name: "Overleaf", hostname: "overleaf.com" },
   { name: "Zoom", hostname: "zoom.us" },
