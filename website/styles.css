@@ -527,6 +527,31 @@ input::placeholder {
   line-height: 1.4;
 }
 
+.preset-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.preset-chip {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.preset-chip:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.preset-chip.added {
+  background: linear-gradient(90deg, #e74c3c, #f39c12);
+  border-color: transparent;
+  font-weight: 600;
+}
+
 .stat-total {
   font-size: 40px;
   font-weight: 700;

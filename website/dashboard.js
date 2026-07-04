@@ -5,11 +5,23 @@ const emailEl = document.getElementById("userEmail");
 const totalBlocksEl = document.getElementById("totalBlocks");
 const topSitesEl = document.getElementById("topSites");
 const allowlistEl = document.getElementById("allowlistList");
+const presetChipsEl = document.getElementById("presetChips");
 const newSiteInput = document.getElementById("newSite");
 const addSiteError = document.getElementById("addSiteError");
 const signOutBtn = document.getElementById("signOut");
 
 const DOMAIN_REGEX = /^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/i;
+
+const PRESET_TOOLS = [
+  { name: "Google Docs", hostname: "docs.google.com" },
+  { name: "Google Drive", hostname: "drive.google.com" },
+  { name: "Notion", hostname: "notion.so" },
+  { name: "Quizlet", hostname: "quizlet.com" },
+  { name: "Khan Academy", hostname: "khanacademy.org" },
+  { name: "Canvas", hostname: "instructure.com" },
+  { name: "Wikipedia", hostname: "wikipedia.org" },
+  { name: "ChatGPT", hostname: "chat.openai.com" },
+];
 
 async function init() {
   const { data } = await supabase.auth.getSession();
@@ -62,6 +74,26 @@ async function loadStats() {
   });
 }
 
+function renderPresetChips(currentHostnames) {
+  presetChipsEl.innerHTML = "";
+  PRESET_TOOLS.forEach((tool) => {
+    const isAdded = currentHostnames.includes(tool.hostname);
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "preset-chip" + (isAdded ? " added" : "");
+    chip.textContent = tool.name;
+    chip.addEventListener("click", async () => {
+      if (isAdded) {
+        await supabase.from("allowlist").delete().eq("hostname", tool.hostname);
+      } else {
+        await supabase.from("allowlist").insert({ hostname: tool.hostname });
+      }
+      loadAllowlist();
+    });
+    presetChipsEl.appendChild(chip);
+  });
+}
+
 async function loadAllowlist() {
   const { data, error } = await supabase
     .from("allowlist")
@@ -72,6 +104,8 @@ async function loadAllowlist() {
     console.error(error);
     return;
   }
+
+  renderPresetChips(data.map((row) => row.hostname));
 
   allowlistEl.innerHTML = "";
   if (!data.length) {
