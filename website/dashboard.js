@@ -15,12 +15,19 @@ const DOMAIN_REGEX = /^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/i;
 const PRESET_TOOLS = [
   { name: "Google Docs", hostname: "docs.google.com" },
   { name: "Google Drive", hostname: "drive.google.com" },
+  { name: "Google Scholar", hostname: "scholar.google.com" },
   { name: "Notion", hostname: "notion.so" },
   { name: "Quizlet", hostname: "quizlet.com" },
   { name: "Khan Academy", hostname: "khanacademy.org" },
   { name: "Canvas", hostname: "instructure.com" },
+  { name: "Blackboard", hostname: "blackboard.com" },
   { name: "Wikipedia", hostname: "wikipedia.org" },
   { name: "ChatGPT", hostname: "chat.openai.com" },
+  { name: "Coursera", hostname: "coursera.org" },
+  { name: "Duolingo", hostname: "duolingo.com" },
+  { name: "Desmos", hostname: "desmos.com" },
+  { name: "Overleaf", hostname: "overleaf.com" },
+  { name: "Zoom", hostname: "zoom.us" },
 ];
 
 async function init() {
