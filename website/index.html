@@ -6,6 +6,9 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <div class="blob one"></div>
+    <div class="blob two"></div>
+
     <nav class="navbar">
       <div class="logo">🔒 Locked In</div>
       <div class="nav-links">
@@ -14,40 +17,139 @@
       </div>
     </nav>
 
-    <section class="hero">
-      <h1>Stay <span class="gradient-text">Locked In</span> on what you're studying</h1>
-      <p>
-        A Chrome extension that uses AI to tell whether the page you're on is
-        actually related to what you're studying — and blocks it if it's not.
-        No hardcoded blocklists. Just tell it your topic and start a session.
-      </p>
-      <div class="cta-row">
-        <a href="https://github.com/BenMathew824/focuslock" class="btn-primary">Download for Chrome</a>
-        <a href="auth.html" class="btn-secondary">Sign In</a>
+    <section class="hero-split">
+      <div class="hero-copy">
+        <div class="eyebrow">🤖 AI-powered · not a hardcoded blocklist</div>
+        <h1>Stay <span class="gradient-text">Locked In</span> on what you're actually studying</h1>
+        <p>
+          Tell it your topic. Start a session. Every page you visit gets
+          classified against that topic in real time — if it's off-topic,
+          it's blocked. No manually curated site lists to keep up with.
+        </p>
+        <div class="cta-row" style="justify-content: flex-start;">
+          <a href="https://github.com/BenMathew824/focuslock" class="btn-primary">Download for Chrome</a>
+          <a href="auth.html" class="btn-secondary">Sign In</a>
+        </div>
+        <div class="trust-row">
+          <span>🔓 Open source</span>
+          <span>⚡ Real-time classification</span>
+          <span>🔒 Your data, your account</span>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="browser-mockup">
+          <div class="browser-bar">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+            <div class="browser-url">🔒 extension://locked-in/blocked.html</div>
+          </div>
+          <div class="browser-content">
+            <div class="mini-blob one"></div>
+            <div class="mini-blob two"></div>
+            <div class="mini-lock-ring">
+              <svg width="72" height="72">
+                <circle class="ring-bg" cx="36" cy="36" r="30" />
+                <circle class="ring-progress" cx="36" cy="36" r="30" style="stroke-dasharray: 188.5; stroke-dashoffset: 60;" />
+              </svg>
+              <div class="mini-lock-icon">🔒</div>
+            </div>
+            <h3 class="mini-heading">You're Locked In</h3>
+            <div class="mini-site-pill">www.youtube.com</div>
+            <p class="mini-subtitle">Flagged as off-topic while Focus Mode is on.</p>
+            <div class="mini-topic">📚 Focusing on: <strong>Calculus 1</strong></div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="features">
-      <div class="card">
-        <h3>📚 AI topic detection</h3>
-        <p>Every page gets classified against your study topic in real time — not a static list of "distracting" sites.</p>
-      </div>
-      <div class="card">
-        <h3>⏱️ Focus sessions</h3>
-        <p>Start a session for a set duration or until a specific time, and Locked In blocks off-topic pages until it ends.</p>
-      </div>
-      <div class="card">
-        <h3>✅ Always Allow</h3>
-        <p>Whitelist reference sites you need mid-session — synced between the extension and your account.</p>
-      </div>
-      <div class="card">
-        <h3>📊 Stats that follow you</h3>
-        <p>Sign in to see your block history and manage your allowlist from any browser, not just where the extension is installed.</p>
+    <section class="steps-section">
+      <h2 class="section-title">How it works</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>Tell it your topic</h3>
+          <p>Type what you're studying — as specific as you want, "Calculus 1" or "the French Revolution."</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>Start a focus session</h3>
+          <p>Pick a duration or an end time. Every open tab and every new page gets checked automatically.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>Off-topic pages get blocked</h3>
+          <p>Claude classifies each page against your topic. Distracting? You're redirected back to work — instantly.</p>
+        </div>
       </div>
     </section>
 
-    <section class="hero" style="margin-top: 0;">
-      <a href="https://github.com/BenMathew824/focuslock" class="btn-primary">Get Started</a>
+    <section class="features-split">
+      <div class="features-visual">
+        <div class="browser-mockup small">
+          <div class="browser-bar">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+          </div>
+          <div class="browser-content popup-preview">
+            <div class="mini-topic-display">📚 Calculus 1</div>
+            <div class="mini-countdown">24:31</div>
+            <div class="mini-block-count">🚫 3 blocked this session</div>
+            <div class="mini-end-btn">End Session Early</div>
+          </div>
+        </div>
+      </div>
+      <div class="features-copy">
+        <h2 class="section-title" style="text-align: left;">Built for real study sessions</h2>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon">📚</div>
+            <div>
+              <h3>AI topic detection</h3>
+              <p>Every page gets classified against your study topic in real time — including single-page apps like YouTube, where the page never fully reloads.</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">⏱️</div>
+            <div>
+              <h3>Focus sessions</h3>
+              <p>Start a session for a set duration or until a specific time. Locked In blocks off-topic pages until it ends — then releases them automatically.</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">✅</div>
+            <div>
+              <h3>Always Allow</h3>
+              <p>Whitelist reference sites you need mid-session — synced between the extension and your account, so it follows you everywhere.</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">📊</div>
+            <div>
+              <h3>Stats that follow you</h3>
+              <p>Sign in to see your block history and manage your allowlist from any browser, not just where the extension is installed.</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
+
+    <section class="final-cta">
+      <div class="card final-cta-card">
+        <h2>Ready to actually get work done?</h2>
+        <p>Install the extension, tell it what you're studying, and start your first session in under a minute.</p>
+        <div class="cta-row">
+          <a href="https://github.com/BenMathew824/focuslock" class="btn-primary">Download for Chrome</a>
+          <a href="auth.html" class="btn-secondary">Create an Account</a>
+        </div>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <div class="logo">🔒 Locked In</div>
+      <a href="https://github.com/BenMathew824/focuslock">GitHub</a>
+    </footer>
   </body>
 </html>
