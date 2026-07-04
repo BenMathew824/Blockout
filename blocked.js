@@ -24,6 +24,8 @@ function startCountdown(startTime, endTime) {
 
   const totalMs = endTime - startTime;
 
+  let interval;
+
   const tick = () => {
     const remaining = endTime - Date.now();
     if (remaining <= 0) {
@@ -38,7 +40,7 @@ function startCountdown(startTime, endTime) {
   };
 
   tick();
-  const interval = setInterval(tick, 1000);
+  interval = setInterval(tick, 1000);
 }
 
 chrome.storage.local.get(
