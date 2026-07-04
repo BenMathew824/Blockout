@@ -14,13 +14,6 @@ const untilTime = document.getElementById("untilTime");
 const studyTopicInput = document.getElementById("studyTopic");
 const studyTopicDisplay = document.getElementById("studyTopicDisplay");
 const apiKeyInput = document.getElementById("apiKeyInput");
-const allowlistList = document.getElementById("allowlistList");
-const newAllowSiteInput = document.getElementById("newAllowSite");
-const statsTotalEl = document.getElementById("statsTotal");
-const statsTopSitesEl = document.getElementById("statsTopSites");
-const accountSignedOut = document.getElementById("accountSignedOut");
-const accountSignedIn = document.getElementById("accountSignedIn");
-const accountEmailDisplay = document.getElementById("accountEmail");
 
 let sessionMode = "duration";
 let countdownInterval = null;
@@ -78,96 +71,15 @@ function renderSessionState() {
   );
 }
 
-function renderAllowlist(allowlist) {
-  allowlistList.innerHTML = "";
-  if (!allowlist.length) {
-    const empty = document.createElement("li");
-    empty.className = "empty";
-    empty.textContent = "No sites added yet";
-    allowlistList.appendChild(empty);
-    return;
-  }
-  allowlist.forEach((site) => {
-    const li = document.createElement("li");
-    const label = document.createElement("span");
-    label.textContent = site;
-    const removeBtn = document.createElement("button");
-    removeBtn.textContent = "✕";
-    removeBtn.addEventListener("click", () => {
-      const updated = allowlist.filter((s) => s !== site);
-      chrome.storage.sync.set({ allowlist: updated }, () => renderAllowlist(updated));
-      pushAllowlistRemove(site);
-    });
-    li.appendChild(label);
-    li.appendChild(removeBtn);
-    allowlistList.appendChild(li);
-  });
-}
-
-function renderStats(lifetimeStats) {
-  const stats = lifetimeStats || { totalBlocks: 0, siteCounts: {} };
-  statsTotalEl.textContent = stats.totalBlocks;
-
-  const topSites = Object.entries(stats.siteCounts || {})
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
-
-  statsTopSitesEl.innerHTML = "";
-  if (!topSites.length) {
-    const empty = document.createElement("div");
-    empty.className = "empty";
-    empty.textContent = "No blocks yet";
-    statsTopSitesEl.appendChild(empty);
-    return;
-  }
-  topSites.forEach(([site, count]) => {
-    const row = document.createElement("div");
-    row.className = "site-row";
-    const label = document.createElement("span");
-    label.textContent = site;
-    const value = document.createElement("span");
-    value.textContent = count;
-    row.appendChild(label);
-    row.appendChild(value);
-    statsTopSitesEl.appendChild(row);
-  });
-}
-
-function renderAccountState(session) {
-  if (session) {
-    accountSignedOut.style.display = "none";
-    accountSignedIn.style.display = "block";
-    accountEmailDisplay.textContent = `Signed in as ${session.user?.email || ""}`;
-  } else {
-    accountSignedOut.style.display = "block";
-    accountSignedIn.style.display = "none";
-  }
-}
-
-async function loadAccountAndSync() {
-  const session = await getStoredSession();
-  renderAccountState(session);
-  if (!session) return;
-
-  // Flush any not-yet-sent local writes before pulling, so a stale pull
-  // can't clobber an addition/removal made while offline.
-  await flushPendingQueue();
-  const allowlist = await pullAndReplaceAllowlist();
-  if (allowlist) renderAllowlist(allowlist);
-}
-
 function load() {
-  chrome.storage.sync.get(["focusModeOn", "allowlist"], (data) => {
+  chrome.storage.sync.get(["focusModeOn"], (data) => {
     focusToggle.checked = !!data.focusModeOn;
-    renderAllowlist(data.allowlist || []);
   });
-  chrome.storage.local.get(["studyTopic", "anthropicApiKey", "lifetimeStats"], (data) => {
+  chrome.storage.local.get(["studyTopic", "anthropicApiKey"], (data) => {
     if (data.studyTopic) studyTopicInput.value = data.studyTopic;
     if (data.anthropicApiKey) apiKeyInput.placeholder = "•••••••• (key saved)";
-    renderStats(data.lifetimeStats);
   });
   renderSessionState();
-  loadAccountAndSync();
 }
 
 document.querySelectorAll(".settings-toggle").forEach((btn) => {
@@ -186,63 +98,9 @@ document.getElementById("saveApiKey").addEventListener("click", () => {
   });
 });
 
-const allowSiteError = document.getElementById("allowSiteError");
-const DOMAIN_REGEX = /^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/i;
-
-newAllowSiteInput.addEventListener("input", () => {
-  allowSiteError.textContent = "";
-});
-
-document.getElementById("addAllowSite").addEventListener("click", () => {
-  const raw = newAllowSiteInput.value.trim().toLowerCase();
-  allowSiteError.textContent = "";
-  if (!raw) return;
-  const hostname = raw.replace(/^https?:\/\//, "").split("/")[0].split(":")[0];
-
-  if (!DOMAIN_REGEX.test(hostname)) {
-    allowSiteError.textContent = "Enter a valid domain, e.g. docs.google.com";
-    return;
-  }
-
-  chrome.storage.sync.get(["allowlist"], (data) => {
-    const allowlist = data.allowlist || [];
-    if (!allowlist.includes(hostname)) {
-      allowlist.push(hostname);
-      chrome.storage.sync.set({ allowlist }, () => renderAllowlist(allowlist));
-      pushAllowlistAdd(hostname);
-    }
-    newAllowSiteInput.value = "";
-  });
-});
-
-document.getElementById("openWebsiteAuth").addEventListener("click", () => {
-  chrome.tabs.create({ url: `${WEBSITE_URL}/auth.html` });
-});
-
-document.getElementById("accountSignOut").addEventListener("click", async () => {
-  await signOut();
-  renderAccountState(null);
-});
-
-// If sign-in happens on the website while the popup is open, pick it up live.
-chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "local" && changes.authSession) {
-    renderAccountState(changes.authSession.newValue);
-    if (changes.authSession.newValue) loadAccountAndSync();
-  }
-});
-
-document.getElementById("resetStats").addEventListener("click", () => {
-  const cleared = { totalBlocks: 0, siteCounts: {} };
-  chrome.storage.local.set({ lifetimeStats: cleared }, () => renderStats(cleared));
-});
-
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes.sessionStats) {
     renderSessionBlockCount(changes.sessionStats.newValue);
-  }
-  if (area === "local" && changes.lifetimeStats) {
-    renderStats(changes.lifetimeStats.newValue);
   }
 });
 

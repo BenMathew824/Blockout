@@ -295,7 +295,10 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   } else if (alarm.name === SESSION_TICK_ALARM) {
     updateBadge();
   } else if (alarm.name === SYNC_FLUSH_ALARM) {
-    flushPendingQueue();
+    // Flush first so a not-yet-sent local write isn't clobbered by the pull
+    // that follows. This is now the only place the allowlist syncs down from
+    // the website — the popup no longer has an Account section to trigger it.
+    flushPendingQueue().then(() => pullAndReplaceAllowlist());
   }
 });
 
@@ -322,6 +325,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
   if (message?.type === "AUTH_SESSION" && message.session) {
     chrome.storage.local.set({ authSession: message.session }, () => {
+      pullAndReplaceAllowlist();
       sendResponse({ ok: true });
     });
     return true;

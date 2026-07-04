@@ -191,86 +191,6 @@
         gap: 6px;
       }
       .settings-body { display: none; }
-
-      ul.chip-list {
-        list-style: none;
-        padding: 0;
-        margin: 0 0 10px;
-        max-height: 120px;
-        overflow-y: auto;
-      }
-      ul.chip-list li {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        padding: 6px 10px;
-        border-radius: 8px;
-        margin-bottom: 4px;
-        font-size: 13px;
-      }
-      ul.chip-list li button {
-        background: none;
-        border: none;
-        color: #ff8a75;
-        cursor: pointer;
-        font-size: 13px;
-        padding: 0;
-      }
-      ul.chip-list .empty {
-        color: #8a8aa0;
-        font-size: 12px;
-        padding: 4px 2px;
-      }
-      .add-row { display: flex; gap: 6px; margin-bottom: 4px; }
-      .add-row input[type="text"] {
-        flex: 1;
-        padding: 8px;
-        border-radius: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.06);
-        color: white;
-        font-size: 13px;
-      }
-      .add-row input[type="text"]::placeholder { color: #8a8aa0; }
-      .add-row button {
-        padding: 8px 12px;
-        background: linear-gradient(90deg, #e74c3c, #f39c12);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 13px;
-        cursor: pointer;
-      }
-      .field-error {
-        color: #ff8a75;
-        font-size: 11px;
-        margin: 2px 2px 4px;
-        min-height: 14px;
-      }
-
-      .stat-row {
-        display: flex;
-        justify-content: space-between;
-        font-size: 13px;
-        margin-bottom: 8px;
-      }
-      .stat-row strong { color: white; }
-      #statsTopSites { font-size: 12px; color: #b8b8c8; margin-bottom: 10px; }
-      #statsTopSites .site-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
-      #statsTopSites .empty { color: #8a8aa0; }
-      #resetStats {
-        width: 100%;
-        padding: 8px;
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: white;
-        border-radius: 8px;
-        font-size: 13px;
-        cursor: pointer;
-      }
-      #resetStats:hover { background: rgba(255, 255, 255, 0.14); }
       #apiKeyInput {
         width: 100%;
         padding: 8px;
@@ -327,38 +247,6 @@
         justify-content: center;
         gap: 6px;
       }
-
-      #accountSignedOut p {
-        font-size: 13px;
-        color: #b8b8c8;
-        margin: 0 0 10px;
-        line-height: 1.4;
-      }
-      #openWebsiteAuth {
-        width: 100%;
-        padding: 10px;
-        background: linear-gradient(90deg, #e74c3c, #f39c12);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-      }
-      #openWebsiteAuth:hover { opacity: 0.9; }
-      #accountSignedIn { display: none; font-size: 13px; }
-      #accountEmail { color: #ccc; margin-bottom: 8px; word-break: break-all; }
-      #accountSignOut {
-        width: 100%;
-        padding: 8px;
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: white;
-        border-radius: 8px;
-        font-size: 13px;
-        cursor: pointer;
-      }
-      #accountSignOut:hover { background: rgba(255, 255, 255, 0.14); }
     </style>
   </head>
   <body>
@@ -415,20 +303,6 @@
     </div>
 
     <div class="settings-section">
-      <button class="settings-toggle" data-target="accountBody"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg> Account ▾</button>
-      <div id="accountBody" class="settings-body">
-        <div id="accountSignedOut">
-          <p>Sign in on the Locked In website to sync your stats and Always Allow list here.</p>
-          <button id="openWebsiteAuth">Sign In on Website</button>
-        </div>
-        <div id="accountSignedIn">
-          <div id="accountEmail"></div>
-          <button id="accountSignOut">Sign Out</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="settings-section">
       <button class="settings-toggle" data-target="aiSettingsBody"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82A1.65 1.65 0 0 0 3 13.09H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg> Anthropic API Key ▾</button>
       <div id="aiSettingsBody" class="settings-body">
         <input type="password" id="apiKeyInput" placeholder="Anthropic API key (sk-ant-...)" />
@@ -436,33 +310,6 @@
       </div>
     </div>
 
-    <div class="settings-section">
-      <button class="settings-toggle" data-target="allowlistBody"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg> Always Allow ▾</button>
-      <div id="allowlistBody" class="settings-body">
-        <ul id="allowlistList" class="chip-list"></ul>
-        <div class="add-row">
-          <input type="text" id="newAllowSite" placeholder="docs.google.com" />
-          <button id="addAllowSite">Add</button>
-        </div>
-        <div id="allowSiteError" class="field-error"></div>
-      </div>
-    </div>
-
-    <div class="settings-section">
-      <button class="settings-toggle" data-target="statsBody"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20V11M12 20V4M18 20v-6"/></svg> Stats ▾</button>
-      <div id="statsBody" class="settings-body">
-        <div class="stat-row">
-          <span>Total blocked</span>
-          <strong id="statsTotal">0</strong>
-        </div>
-        <div id="statsTopSites"></div>
-        <button id="resetStats">Reset Stats</button>
-      </div>
-    </div>
-
-    <script src="config.js"></script>
-    <script src="auth.js"></script>
-    <script src="sync.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>
