@@ -21,40 +21,9 @@ async function getStoredSession() {
   return data.authSession || null;
 }
 
-async function signUp(email, password) {
-  const response = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      apikey: SUPABASE_ANON_KEY,
-    },
-    body: JSON.stringify({ email, password }),
-  });
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.msg || data.error_description || "Sign up failed");
-  }
-  if (data.access_token) {
-    await storeSession(data);
-  }
-  return data;
-}
-
-async function signIn(email, password) {
-  const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      apikey: SUPABASE_ANON_KEY,
-    },
-    body: JSON.stringify({ email, password }),
-  });
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.msg || data.error_description || "Sign in failed");
-  }
-  return storeSession(data);
-}
+// Sign up/sign in happen on the companion website, not in the extension —
+// see background.js's onMessageExternal listener, which receives the
+// session from there instead.
 
 async function signOut() {
   const session = await getStoredSession();

@@ -1,4 +1,5 @@
 import { supabase } from "./supabaseClient.js";
+import { pushSessionToExtension } from "./extensionBridge.js";
 
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
@@ -38,6 +39,7 @@ submitBtn.addEventListener("click", async () => {
     return;
   }
 
+  pushSessionToExtension(data.session);
   window.location.href = "dashboard.html";
 });
 

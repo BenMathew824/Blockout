@@ -1,4 +1,5 @@
 import { supabase } from "./supabaseClient.js";
+import { pushSessionToExtension, pushSignOutToExtension } from "./extensionBridge.js";
 
 const emailEl = document.getElementById("userEmail");
 const totalBlocksEl = document.getElementById("totalBlocks");
@@ -17,6 +18,10 @@ async function init() {
     return;
   }
   emailEl.textContent = data.session.user.email;
+
+  // Re-push on every dashboard load — covers the case where the extension
+  // was installed (or reinstalled) after the user already signed in here.
+  pushSessionToExtension(data.session);
 
   await loadStats();
   await loadAllowlist();
@@ -120,6 +125,7 @@ document.getElementById("resetStats").addEventListener("click", async () => {
 
 signOutBtn.addEventListener("click", async () => {
   await supabase.auth.signOut();
+  pushSignOutToExtension();
   window.location.href = "auth.html";
 });
 

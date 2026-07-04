@@ -311,31 +311,24 @@
         margin-bottom: 8px;
       }
 
-      #accountSignedOut input[type="email"],
-      #accountSignedOut input[type="password"] {
-        width: 100%;
-        padding: 8px;
-        border-radius: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.06);
-        color: white;
-        font-size: 12px;
-        margin-bottom: 6px;
-        box-sizing: border-box;
+      #accountSignedOut p {
+        font-size: 13px;
+        color: #b8b8c8;
+        margin: 0 0 10px;
+        line-height: 1.4;
       }
-      #accountSignedOut input::placeholder { color: #8a8aa0; }
-      .account-buttons { display: flex; gap: 6px; margin-bottom: 4px; }
-      .account-buttons button {
-        flex: 1;
-        padding: 8px;
+      #openWebsiteAuth {
+        width: 100%;
+        padding: 10px;
+        background: linear-gradient(90deg, #e74c3c, #f39c12);
+        color: white;
         border: none;
         border-radius: 8px;
         font-size: 13px;
+        font-weight: 600;
         cursor: pointer;
       }
-      #accountSignIn { background: linear-gradient(90deg, #e74c3c, #f39c12); color: white; }
-      #accountSignUp { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1); color: white; }
-      #accountSignUp:hover { background: rgba(255, 255, 255, 0.14); }
+      #openWebsiteAuth:hover { opacity: 0.9; }
       #accountSignedIn { display: none; font-size: 13px; }
       #accountEmail { color: #ccc; margin-bottom: 8px; word-break: break-all; }
       #accountSignOut {
@@ -402,13 +395,8 @@
       <button class="settings-toggle" data-target="accountBody">👤 Account ▾</button>
       <div id="accountBody" class="settings-body">
         <div id="accountSignedOut">
-          <input type="email" id="accountEmailInput" placeholder="Email" />
-          <input type="password" id="accountPasswordInput" placeholder="Password" />
-          <div class="account-buttons">
-            <button id="accountSignIn">Sign In</button>
-            <button id="accountSignUp">Sign Up</button>
-          </div>
-          <div id="accountError" class="field-error"></div>
+          <p>Sign in on the Locked In website to sync your stats and Always Allow list here.</p>
+          <button id="openWebsiteAuth">Sign In on Website</button>
         </div>
         <div id="accountSignedIn">
           <div id="accountEmail"></div>

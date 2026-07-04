@@ -315,3 +315,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   return true;
 });
+
+// Lets the companion website hand off an authenticated session after the
+// user signs in there, so the popup never needs its own sign-in form.
+// Requires manifest.json's externally_connectable to match the site's origin.
+chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
+  if (message?.type === "AUTH_SESSION" && message.session) {
+    chrome.storage.local.set({ authSession: message.session }, () => {
+      sendResponse({ ok: true });
+    });
+    return true;
+  }
+  if (message?.type === "AUTH_SIGN_OUT") {
+    chrome.storage.local.remove("authSession", () => sendResponse({ ok: true }));
+    return true;
+  }
+});

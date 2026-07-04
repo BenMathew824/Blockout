@@ -20,10 +20,7 @@ const statsTotalEl = document.getElementById("statsTotal");
 const statsTopSitesEl = document.getElementById("statsTopSites");
 const accountSignedOut = document.getElementById("accountSignedOut");
 const accountSignedIn = document.getElementById("accountSignedIn");
-const accountEmailInput = document.getElementById("accountEmailInput");
-const accountPasswordInput = document.getElementById("accountPasswordInput");
 const accountEmailDisplay = document.getElementById("accountEmail");
-const accountError = document.getElementById("accountError");
 
 let sessionMode = "duration";
 let countdownInterval = null;
@@ -217,45 +214,21 @@ document.getElementById("addAllowSite").addEventListener("click", () => {
   });
 });
 
-document.getElementById("accountSignIn").addEventListener("click", async () => {
-  accountError.textContent = "";
-  const email = accountEmailInput.value.trim();
-  const password = accountPasswordInput.value;
-  if (!email || !password) return;
-  try {
-    const session = await signIn(email, password);
-    accountPasswordInput.value = "";
-    renderAccountState(session);
-    await loadAccountAndSync();
-  } catch (err) {
-    accountError.textContent = err.message;
-  }
-});
-
-document.getElementById("accountSignUp").addEventListener("click", async () => {
-  accountError.textContent = "";
-  const email = accountEmailInput.value.trim();
-  const password = accountPasswordInput.value;
-  if (!email || !password) return;
-  try {
-    const result = await signUp(email, password);
-    accountPasswordInput.value = "";
-    if (result.access_token) {
-      renderAccountState(await getStoredSession());
-      await loadAccountAndSync();
-    } else {
-      accountError.textContent = "Check your email to confirm your account, then sign in.";
-    }
-  } catch (err) {
-    accountError.textContent = err.message;
-  }
+document.getElementById("openWebsiteAuth").addEventListener("click", () => {
+  chrome.tabs.create({ url: `${WEBSITE_URL}/auth.html` });
 });
 
 document.getElementById("accountSignOut").addEventListener("click", async () => {
   await signOut();
-  accountEmailInput.value = "";
-  accountPasswordInput.value = "";
   renderAccountState(null);
+});
+
+// If sign-in happens on the website while the popup is open, pick it up live.
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && changes.authSession) {
+    renderAccountState(changes.authSession.newValue);
+    if (changes.authSession.newValue) loadAccountAndSync();
+  }
 });
 
 document.getElementById("resetStats").addEventListener("click", () => {

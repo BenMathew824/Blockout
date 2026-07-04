@@ -8,6 +8,9 @@
   "background": {
     "service_worker": "background.js"
   },
+  "externally_connectable": {
+    "matches": ["https://YOUR-DEPLOYED-DOMAIN.vercel.app/*", "http://localhost:*/*"]
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
