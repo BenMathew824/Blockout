@@ -8,6 +8,13 @@
   "background": {
     "service_worker": "background.js"
   },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["focusBorder.js"],
+      "run_at": "document_start"
+    }
+  ],
   "externally_connectable": {
     "matches": ["https://YOUR-DEPLOYED-DOMAIN.vercel.app/*", "http://localhost:*/*"]
   },
