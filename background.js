@@ -335,17 +335,27 @@ function startSession(minutes, topic) {
 function stopSession(showEndNotification) {
   chrome.alarms.clear(SESSION_END_ALARM);
   chrome.alarms.clear(SESSION_TICK_ALARM);
+
+  if (showEndNotification) {
+    chrome.storage.local.get(["studyTopic", "sessionStats"], (data) => {
+      const topicLine = data.studyTopic ? ` on "${data.studyTopic}"` : "";
+      const blocks = data.sessionStats?.totalBlocks || 0;
+      const blockLine =
+        blocks > 0
+          ? ` You stayed on track through ${blocks} distraction${blocks === 1 ? "" : "s"} along the way.`
+          : " You stayed distraction-free the whole time.";
+      chrome.notifications.create({
+        type: "basic",
+        iconUrl: "icons/icon128.png",
+        title: "Nice work! Session complete 🎉",
+        message: `You crushed your focus session${topicLine}.${blockLine}`,
+      });
+    });
+  }
+
   chrome.storage.local.set({ sessionActive: false, sessionStartTime: null, sessionEndTime: null });
   chrome.storage.sync.set({ focusModeOn: false });
   chrome.action.setBadgeText({ text: "" });
-  if (showEndNotification) {
-    chrome.notifications.create({
-      type: "basic",
-      iconUrl: "icons/icon128.png",
-      title: "Time's up!",
-      message: "Your focus session has ended — nice work staying locked in.",
-    });
-  }
 }
 
 chrome.alarms.onAlarm.addListener((alarm) => {
