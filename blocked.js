@@ -1,6 +1,12 @@
 const params = new URLSearchParams(location.search);
 document.getElementById("site").textContent = params.get("site") || "This site";
 
+const reason = params.get("reason");
+if (reason) {
+  document.getElementById("reasonText").textContent = reason;
+  document.getElementById("reasonBox").style.display = "block";
+}
+
 const ringProgress = document.getElementById("ringProgress");
 const RING_CIRCUMFERENCE = 2 * Math.PI * 52;
 ringProgress.style.strokeDasharray = `${RING_CIRCUMFERENCE}`;

@@ -50,11 +50,11 @@ async function classifyTabRelevance(hostname, title, topic, apiKey) {
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5",
-        max_tokens: 10,
+        max_tokens: 60,
         messages: [
           {
             role: "user",
-            content: `Study topic: "${topic}"\nWebsite hostname: ${hostname}\nPage title: "${title || ""}"\n\nIs this website/page likely relevant to studying the topic above? Reply with exactly one word: RELEVANT or DISTRACTING.`,
+            content: `Study topic: "${topic}"\nWebsite hostname: ${hostname}\nPage title: "${title || ""}"\n\nIs this website/page likely relevant to studying the topic above? Reply in exactly this format, two lines:\nRELEVANT or DISTRACTING\n<a short one-sentence reason why, under 15 words>`,
           },
         ],
       }),
@@ -63,18 +63,28 @@ async function classifyTabRelevance(hostname, title, topic, apiKey) {
     if (!response.ok) {
       const errBody = await response.text();
       console.warn("LockedIn: classification request failed", response.status, errBody);
-      return false;
+      return { isDistracting: false, reason: "" };
     }
 
     const data = await response.json();
-    const answer = (data.content?.[0]?.text || "").trim().toUpperCase();
-    const isDistracting = answer.includes("DISTRACTING");
-    console.log("LockedIn: classified", hostname, `("${title}") as`, answer || "(empty response)");
-    classificationCache.set(cacheKey, isDistracting);
-    return isDistracting;
+    const rawText = (data.content?.[0]?.text || "").trim();
+    const lines = rawText.split("\n").map((line) => line.trim()).filter(Boolean);
+    const verdict = (lines[0] || "").toUpperCase();
+    const isDistracting = verdict.includes("DISTRACTING");
+    const reason = lines.slice(1).join(" ").trim();
+    console.log(
+      "LockedIn: classified",
+      hostname,
+      `("${title}") as`,
+      verdict || "(empty response)",
+      reason ? `— ${reason}` : ""
+    );
+    const result = { isDistracting, reason };
+    classificationCache.set(cacheKey, result);
+    return result;
   } catch (err) {
     console.warn("LockedIn: classification error", err);
-    return false;
+    return { isDistracting: false, reason: "" };
   }
 }
 
@@ -212,7 +222,7 @@ async function runClassification(tabId) {
   }
   title = await getSettledTitle(tabId, title);
 
-  const isDistracting = await classifyTabRelevance(
+  const { isDistracting, reason } = await classifyTabRelevance(
     hostname,
     title,
     localData.studyTopic,
@@ -225,6 +235,9 @@ async function runClassification(tabId) {
     // same as any other site with no relevant page to go back to.
     const returnTo = YOUTUBE_HOSTNAME.test(hostname) ? null : lastRelevantUrl.get(tabId);
     let blockedUrl = `blocked.html?site=${encodeURIComponent(hostname)}&blockedFrom=${encodeURIComponent(url)}`;
+    if (reason) {
+      blockedUrl += `&reason=${encodeURIComponent(reason)}`;
+    }
     if (returnTo) {
       blockedUrl += `&returnTo=${encodeURIComponent(returnTo)}`;
     }
