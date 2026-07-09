@@ -589,6 +589,22 @@ input::placeholder {
   margin-bottom: 20px;
 }
 
+.streak-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 6px 14px;
+  width: fit-content;
+  margin-bottom: 16px;
+}
+.streak-fire { font-size: 15px; }
+
 .site-row {
   display: flex;
   justify-content: space-between;

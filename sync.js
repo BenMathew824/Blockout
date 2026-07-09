@@ -91,6 +91,66 @@ async function pullAndReplaceAllowlist() {
   }
 }
 
+// Records today as a study day (idempotent — the unique(user_id, day)
+// constraint means calling this more than once in a day is a no-op).
+async function syncStudyDay() {
+  const headers = await getAuthHeaders();
+  if (!headers) return;
+
+  const day = new Date().toISOString().slice(0, 10);
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/study_days`, {
+      method: "POST",
+      headers: { ...headers, Prefer: "resolution=ignore-duplicates" },
+      body: JSON.stringify({ day }),
+    });
+    if (!response.ok) throw new Error(`status ${response.status}`);
+  } catch (err) {
+    await queuePendingOp({ type: "study_day", day });
+  }
+}
+
+// Given study-day strings sorted most-recent-first, counts consecutive days
+// ending at today or yesterday (yesterday still counts as "active" so the
+// streak doesn't reset the instant midnight passes with no session yet).
+function computeStreak(sortedDaysDesc) {
+  if (!sortedDaysDesc.length) return 0;
+
+  const toISODate = (d) => d.toISOString().slice(0, 10);
+  const today = toISODate(new Date());
+  const yesterday = toISODate(new Date(Date.now() - 86400000));
+
+  if (sortedDaysDesc[0] !== today && sortedDaysDesc[0] !== yesterday) return 0;
+
+  let streak = 1;
+  const cursor = new Date(sortedDaysDesc[0] + "T00:00:00Z");
+  for (let i = 1; i < sortedDaysDesc.length; i++) {
+    cursor.setUTCDate(cursor.getUTCDate() - 1);
+    if (sortedDaysDesc[i] === toISODate(cursor)) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+async function getCurrentStreak() {
+  const headers = await getAuthHeaders();
+  if (!headers) return 0;
+
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/study_days?select=day&order=day.desc`, {
+      headers,
+    });
+    if (!response.ok) throw new Error(`status ${response.status}`);
+    const rows = await response.json();
+    return computeStreak(rows.map((r) => r.day));
+  } catch (err) {
+    return 0;
+  }
+}
+
 async function flushPendingQueue() {
   const headers = await getAuthHeaders();
   if (!headers) return;
@@ -122,6 +182,13 @@ async function flushPendingQueue() {
           `${SUPABASE_URL}/rest/v1/allowlist?hostname=eq.${encodeURIComponent(op.hostname)}`,
           { method: "DELETE", headers }
         );
+        ok = response.ok;
+      } else if (op.type === "study_day") {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/study_days`, {
+          method: "POST",
+          headers: { ...headers, Prefer: "resolution=ignore-duplicates" },
+          body: JSON.stringify({ day: op.day }),
+        });
         ok = response.ok;
       }
     } catch (err) {

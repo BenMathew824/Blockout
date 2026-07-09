@@ -370,6 +370,7 @@ function startSession(minutes, topic) {
   chrome.alarms.create(SESSION_END_ALARM, { when: endTime });
   chrome.alarms.create(SESSION_TICK_ALARM, { periodInMinutes: 1 });
   updateBadge();
+  syncStudyDay();
 }
 
 function stopSession(showEndNotification) {
@@ -377,17 +378,21 @@ function stopSession(showEndNotification) {
   chrome.alarms.clear(SESSION_TICK_ALARM);
 
   if (showEndNotification) {
-    chrome.storage.local.get(["studyTopic", "sessionStats"], (data) => {
+    Promise.all([
+      chrome.storage.local.get(["studyTopic", "sessionStats"]),
+      getCurrentStreak(),
+    ]).then(([data, streak]) => {
       const topicLine = data.studyTopic ? ` on "${data.studyTopic}"` : "";
       const blocks = data.sessionStats?.totalBlocks || 0;
       const blockLine =
         blocks > 0
           ? ` You stayed on track through ${blocks} distraction${blocks === 1 ? "" : "s"} along the way.`
           : " You stayed distraction-free the whole time.";
+      const streakLine = streak > 1 ? ` 🔥 ${streak}-day streak!` : "";
       chrome.notifications.create({
         type: "basic",
         iconUrl: "icons/icon128.png",
-        title: "Nice work! Session complete 🎉",
+        title: `Nice work! Session complete 🎉${streakLine}`,
         message: `You crushed your focus session${topicLine}.${blockLine}`,
       });
     });

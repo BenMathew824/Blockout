@@ -21,8 +21,20 @@ create table if not exists public.site_blocks (
   unique (user_id, hostname)
 );
 
+-- One row per calendar day a session was started, used to compute streaks.
+-- day is a plain date (no time/timezone) — one row per day regardless of
+-- how many sessions happened that day, via the unique constraint below.
+create table if not exists public.study_days (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  day         date not null,
+  created_at  timestamptz not null default now(),
+  unique (user_id, day)
+);
+
 alter table public.allowlist enable row level security;
 alter table public.site_blocks enable row level security;
+alter table public.study_days enable row level security;
 
 drop policy if exists "own allowlist rows" on public.allowlist;
 create policy "own allowlist rows" on public.allowlist
@@ -30,6 +42,10 @@ create policy "own allowlist rows" on public.allowlist
 
 drop policy if exists "own site_blocks rows" on public.site_blocks;
 create policy "own site_blocks rows" on public.site_blocks
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "own study_days rows" on public.study_days;
+create policy "own study_days rows" on public.study_days
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- Atomic increment (avoids read-modify-write races). Called via:
