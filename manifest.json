@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Locked In",
+  "name": "Blockout",
   "version": "1.0",
   "description": "AI-powered study focus tool",
   "permissions": ["tabs", "storage", "alarms", "webNavigation", "notifications"],

@@ -1,8 +1,8 @@
-// Hands an authenticated Supabase session off to the Locked In extension via
+// Hands an authenticated Supabase session off to the Blockout extension via
 // chrome.runtime.sendMessage, using Manifest V3's externally_connectable —
 // this only works if the extension's manifest.json lists this site's origin
 // under externally_connectable.matches, and EXTENSION_ID below matches the
-// real installed extension's ID (chrome://extensions -> Locked In -> ID).
+// real installed extension's ID (chrome://extensions -> Blockout -> ID).
 export const EXTENSION_ID = "caahmbjoediomjiacdepnacalbmnnkia";
 
 function hasExtensionMessaging() {
@@ -26,7 +26,7 @@ export function pushSessionToExtension(session) {
       if (chrome.runtime.lastError) {
         // Extension isn't installed, or this origin isn't in its
         // externally_connectable list yet — not an error the user needs to see.
-        console.warn("Locked In extension not reachable:", chrome.runtime.lastError.message);
+        console.warn("Blockout extension not reachable:", chrome.runtime.lastError.message);
       }
     }
   );

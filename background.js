@@ -23,7 +23,7 @@ chrome.runtime.onInstalled.addListener(() => {
   });
   updateBadge();
   chrome.alarms.create(SYNC_FLUSH_ALARM, { periodInMinutes: 5 });
-  console.log("LockedIn installed and ready.");
+  console.log("Blockout installed and ready.");
 });
 
 chrome.runtime.onStartup.addListener(updateBadge);
@@ -65,7 +65,7 @@ async function classifyTabRelevance(hostname, url, title, topic, apiKey) {
 
     if (!response.ok) {
       const errBody = await response.text();
-      console.warn("LockedIn: classification request failed", response.status, errBody);
+      console.warn("Blockout: classification request failed", response.status, errBody);
       return { isDistracting: false, reason: "" };
     }
 
@@ -76,7 +76,7 @@ async function classifyTabRelevance(hostname, url, title, topic, apiKey) {
     const isDistracting = verdict.includes("DISTRACTING");
     const reason = lines.slice(1).join(" ").trim();
     console.log(
-      "LockedIn: classified",
+      "Blockout: classified",
       hostname,
       `("${title}") as`,
       verdict || "(empty response)",
@@ -86,7 +86,7 @@ async function classifyTabRelevance(hostname, url, title, topic, apiKey) {
     classificationCache.set(cacheKey, result);
     return result;
   } catch (err) {
-    console.warn("LockedIn: classification error", err);
+    console.warn("Blockout: classification error", err);
     return { isDistracting: false, reason: "" };
   }
 }
@@ -211,20 +211,20 @@ async function runClassification(tabId) {
 
   const syncData = await chrome.storage.sync.get(["focusModeOn", "allowlist"]);
   if (!syncData.focusModeOn) {
-    console.log("LockedIn: skipped", url, "- Focus Mode is off");
+    console.log("Blockout: skipped", url, "- Focus Mode is off");
     return;
   }
 
   const hostname = new URL(url).hostname;
   if (matchesAllowlist(hostname, syncData.allowlist || [])) {
     lastRelevantUrl.set(tabId, url);
-    console.log("LockedIn: allowlisted, skipping classification for", hostname);
+    console.log("Blockout: allowlisted, skipping classification for", hostname);
     return;
   }
 
   const localData = await chrome.storage.local.get(["studyTopic", "anthropicApiKey"]);
   if (!localData.studyTopic || !localData.anthropicApiKey) {
-    console.log("LockedIn: skipped", url, {
+    console.log("Blockout: skipped", url, {
       hasStudyTopic: !!localData.studyTopic,
       hasApiKey: !!localData.anthropicApiKey,
     });
