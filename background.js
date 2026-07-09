@@ -28,13 +28,16 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.runtime.onStartup.addListener(updateBadge);
 
-// hostname|title|topic -> boolean (true = classified as distracting)
-// Keyed by title (not just hostname) so multi-page/SPA sites like YouTube or
-// Reddit get a fresh verdict per page instead of reusing the first page's answer.
+// url|title|topic -> {isDistracting, reason}
+// Keyed by url (not just hostname) so multi-page/SPA sites like YouTube or
+// Reddit get a fresh verdict per page instead of reusing a previous page's
+// answer. Title is also included: on the same url, a stale placeholder
+// title (see GENERIC_NOTIFICATION_TITLE below) settling into the real title
+// should still bust the cache and reclassify.
 const classificationCache = new Map();
 
-async function classifyTabRelevance(hostname, title, topic, apiKey) {
-  const cacheKey = `${hostname}|${title}|${topic}`;
+async function classifyTabRelevance(hostname, url, title, topic, apiKey) {
+  const cacheKey = `${url}|${title}|${topic}`;
   if (classificationCache.has(cacheKey)) {
     return classificationCache.get(cacheKey);
   }
@@ -224,6 +227,7 @@ async function runClassification(tabId) {
 
   const { isDistracting, reason } = await classifyTabRelevance(
     hostname,
+    url,
     title,
     localData.studyTopic,
     localData.anthropicApiKey
@@ -244,6 +248,12 @@ async function runClassification(tabId) {
     // The tab may have been closed during the classification delay above —
     // ignore that case rather than letting it surface as an unhandled rejection.
     chrome.tabs.update(tabId, { url: chrome.runtime.getURL(blockedUrl) }).catch(() => {});
+    // Otherwise, navigating back to this exact url later (browser back
+    // button, re-clicking the same video) would hit this dedup guard and
+    // silently skip reclassification, letting the blocked page play again
+    // uncontested. Clearing it here means a later revisit is treated as a
+    // fresh navigation and gets re-checked (and re-blocked) properly.
+    lastProcessedUrl.delete(tabId);
   } else {
     lastRelevantUrl.set(tabId, url);
   }
