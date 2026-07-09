@@ -115,9 +115,24 @@ function stripCountdownPrefix(title) {
   return (title || "").replace(TAB_TITLE_COUNTDOWN_PREFIX, "");
 }
 
+// tabId -> the title actually used for that tab's last classification. On an
+// SPA like YouTube, clicking a new video from the sidebar changes the url
+// right away, but document.title can lag behind by a second or more while
+// the new video's metadata loads — so the very next read can still be the
+// PREVIOUS video's title. That title isn't a generic placeholder (it's a
+// real, valid-looking title), so it wouldn't trip GENERIC_NOTIFICATION_TITLE
+// below, and without this check we'd classify the new video using stale
+// data left over from the one before it.
+const lastClassifiedTitle = new Map();
+
 async function getSettledTitle(tabId, initialTitle) {
   let title = initialTitle;
-  for (let i = 0; i < 3 && GENERIC_NOTIFICATION_TITLE.test(title); i++) {
+  const staleTitle = lastClassifiedTitle.get(tabId);
+  for (
+    let i = 0;
+    i < 4 && (GENERIC_NOTIFICATION_TITLE.test(title) || (staleTitle !== undefined && title === staleTitle));
+    i++
+  ) {
     await new Promise((resolve) => setTimeout(resolve, 800));
     try {
       const tab = await chrome.tabs.get(tabId);
@@ -224,6 +239,7 @@ async function runClassification(tabId) {
     return; // tab closed before we could read it
   }
   title = await getSettledTitle(tabId, title);
+  lastClassifiedTitle.set(tabId, title);
 
   const { isDistracting, reason } = await classifyTabRelevance(
     hostname,
@@ -316,6 +332,7 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   lastProcessedUrl.delete(tabId);
   lastRelevantUrl.delete(tabId);
   lastCleanTitleByTab.delete(tabId);
+  lastClassifiedTitle.delete(tabId);
   const pending = pendingNav.get(tabId);
   if (pending) clearTimeout(pending.timer);
   pendingNav.delete(tabId);
