@@ -388,7 +388,8 @@ function stopSession(showEndNotification) {
         blocks > 0
           ? ` You stayed on track through ${blocks} distraction${blocks === 1 ? "" : "s"} along the way.`
           : " You stayed distraction-free the whole time.";
-      const streakLine = streak > 1 ? ` 🔥 ${streak}-day streak!` : "";
+      const streakLine =
+        streak >= 2 ? ` 🔥 ${streak}-day streak!` : streak === 1 ? " 🔥 Streak started!" : "";
       chrome.notifications.create({
         type: "basic",
         iconUrl: "icons/icon128.png",

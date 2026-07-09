@@ -3,16 +3,37 @@
   <head>
     <meta charset="UTF-8" />
     <title>Locked In</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
       * { box-sizing: border-box; }
+
+      :root {
+        --paper: #f7f2e8;
+        --paper-2: #efe7d6;
+        --ink: #201c16;
+        --ink-soft: #6b6255;
+        --line: rgba(32, 28, 22, 0.16);
+        --accent-red: #e2472c;
+        --accent-orange: #ef9412;
+      }
 
       body {
         width: 280px;
         padding: 20px;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        color: white;
-        background: radial-gradient(circle at 20% 0%, #2a2a52 0%, #1a1a2e 55%, #12101f 100%);
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--ink);
+        background: var(--paper);
         margin: 0;
+      }
+
+      h1, h2, h3 {
+        font-family: "Fraunces", Georgia, serif;
+        font-weight: 600;
       }
 
       h1 {
@@ -24,7 +45,7 @@
       }
       .logo-icon { width: 22px; height: 22px; border-radius: 6px; display: block; }
       .gradient-text {
-        background: linear-gradient(90deg, #e74c3c, #f39c12);
+        background: linear-gradient(90deg, var(--accent-red), var(--accent-orange));
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
@@ -37,6 +58,7 @@
         justify-content: space-between;
         margin-bottom: 16px;
         font-size: 13px;
+        font-weight: 500;
       }
       .switch {
         position: relative;
@@ -49,47 +71,48 @@
         position: absolute;
         cursor: pointer;
         inset: 0;
-        background: rgba(255, 255, 255, 0.15);
+        background: var(--paper-2);
+        border: 2px solid var(--ink);
         border-radius: 24px;
         transition: 0.2s;
       }
       .slider::before {
         content: "";
         position: absolute;
-        height: 18px;
-        width: 18px;
+        height: 14px;
+        width: 14px;
         left: 3px;
         bottom: 3px;
-        background-color: white;
+        background-color: var(--ink);
         border-radius: 50%;
         transition: 0.2s;
       }
-      input:checked + .slider { background: linear-gradient(90deg, #e74c3c, #f39c12); }
-      input:checked + .slider::before { transform: translateX(20px); }
+      input:checked + .slider { background: linear-gradient(90deg, var(--accent-red), var(--accent-orange)); }
+      input:checked + .slider::before { transform: translateX(20px); background-color: #fff8ee; }
 
       .session-box {
-        background: rgba(37, 37, 63, 0.55);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px;
+        background: var(--paper-2);
+        border: 2px solid var(--ink);
+        border-radius: 14px;
+        box-shadow: 3px 3px 0 var(--line);
         padding: 16px;
         margin-bottom: 16px;
         text-align: center;
       }
       #countdown {
+        font-family: "Fraunces", serif;
         font-size: 28px;
         font-weight: 700;
         font-variant-numeric: tabular-nums;
         margin-bottom: 4px;
-        background: linear-gradient(90deg, #e74c3c, #f39c12);
+        background: linear-gradient(90deg, var(--accent-red), var(--accent-orange));
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
       }
       #sessionBlockCount {
         font-size: 12px;
-        color: #8a8aa0;
+        color: var(--ink-soft);
         margin-bottom: 10px;
         display: flex;
         align-items: center;
@@ -104,33 +127,40 @@
       .presets button {
         flex: 1;
         padding: 8px 0;
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        color: white;
+        background: var(--paper);
+        border: 2px solid var(--line);
+        color: var(--ink);
         border-radius: 8px;
         font-size: 13px;
+        font-family: inherit;
         cursor: pointer;
         transition: background 0.15s ease, border-color 0.15s ease;
       }
       .presets button.selected {
-        background: linear-gradient(90deg, #e74c3c, #f39c12);
-        border-color: transparent;
+        background: linear-gradient(90deg, var(--accent-red), var(--accent-orange));
+        color: #fff8ee;
+        border-color: var(--ink);
+        font-weight: 600;
       }
       #startSession, #stopSession {
         width: 100%;
         padding: 11px;
-        border: none;
+        border: 2px solid var(--ink);
         border-radius: 10px;
         font-size: 14px;
         font-weight: 600;
+        font-family: inherit;
         cursor: pointer;
-        color: white;
         transition: transform 0.15s ease, box-shadow 0.15s ease;
       }
-      #startSession { background: linear-gradient(90deg, #e74c3c, #f39c12); }
-      #startSession:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(231, 76, 60, 0.35); }
-      #stopSession { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1); }
-      #stopSession:hover { background: rgba(255, 255, 255, 0.14); }
+      #startSession {
+        background: linear-gradient(90deg, var(--accent-red), var(--accent-orange));
+        color: #fff8ee;
+        box-shadow: 3px 3px 0 var(--ink);
+      }
+      #startSession:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
+      #stopSession { background: var(--paper); color: var(--ink); }
+      #stopSession:hover { background: var(--paper-2); }
 
       .mode-tabs {
         display: flex;
@@ -140,18 +170,20 @@
       .mode-tab {
         flex: 1;
         padding: 6px 0;
-        background: none;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        color: #aaa;
+        background: var(--paper);
+        border: 2px solid var(--line);
+        color: var(--ink-soft);
         border-radius: 8px;
         font-size: 12px;
+        font-weight: 600;
+        font-family: inherit;
         cursor: pointer;
         transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
       }
       .mode-tab.selected {
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
-        border-color: rgba(255, 255, 255, 0.2);
+        background: var(--paper-2);
+        color: var(--ink);
+        border-color: var(--ink);
       }
       .custom-duration {
         display: flex;
@@ -163,26 +195,29 @@
         width: 50px;
         padding: 8px;
         border-radius: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.06);
-        color: white;
+        border: 2px solid var(--line);
+        background: var(--paper);
+        color: var(--ink);
         font-size: 13px;
+        font-family: inherit;
         text-align: center;
       }
       .custom-duration span {
         font-size: 12px;
-        color: #aaa;
+        color: var(--ink-soft);
       }
       .settings-section {
         margin-top: 16px;
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        border-top: 2px solid var(--ink);
         padding-top: 12px;
       }
       .settings-toggle {
         background: none;
         border: none;
-        color: #aaa;
+        color: var(--ink-soft);
         font-size: 12px;
+        font-weight: 600;
+        font-family: inherit;
         cursor: pointer;
         padding: 0;
         margin-bottom: 8px;
@@ -195,52 +230,56 @@
         width: 100%;
         padding: 8px;
         border-radius: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.06);
-        color: white;
+        border: 2px solid var(--line);
+        background: var(--paper);
+        color: var(--ink);
         font-size: 12px;
+        font-family: inherit;
         margin-bottom: 8px;
         box-sizing: border-box;
       }
-      #apiKeyInput::placeholder { color: #8a8aa0; }
+      #apiKeyInput::placeholder { color: var(--ink-soft); }
       #saveApiKey {
         width: 100%;
         padding: 8px;
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: white;
+        background: var(--paper);
+        border: 2px solid var(--ink);
+        color: var(--ink);
         border-radius: 8px;
         font-size: 13px;
+        font-weight: 600;
+        font-family: inherit;
         cursor: pointer;
       }
-      #saveApiKey:hover { background: rgba(255, 255, 255, 0.14); }
+      #saveApiKey:hover { background: var(--paper-2); }
       input[type="time"] {
         width: 100%;
         padding: 8px;
         border-radius: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.06);
-        color: white;
+        border: 2px solid var(--line);
+        background: var(--paper);
+        color: var(--ink);
         font-size: 13px;
+        font-family: inherit;
         margin-bottom: 8px;
         box-sizing: border-box;
-        color-scheme: dark;
       }
       #studyTopic {
         width: 100%;
         padding: 8px;
         border-radius: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.06);
-        color: white;
+        border: 2px solid var(--line);
+        background: var(--paper);
+        color: var(--ink);
         font-size: 13px;
+        font-family: inherit;
         margin-bottom: 8px;
         box-sizing: border-box;
       }
-      #studyTopic::placeholder { color: #8a8aa0; }
+      #studyTopic::placeholder { color: var(--ink-soft); }
       #studyTopicDisplay {
         font-size: 13px;
-        color: #ccc;
+        color: var(--ink-soft);
         margin-bottom: 8px;
         display: flex;
         align-items: center;
