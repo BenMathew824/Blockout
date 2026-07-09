@@ -54,7 +54,7 @@ async function classifyTabRelevance(hostname, title, topic, apiKey) {
         messages: [
           {
             role: "user",
-            content: `Study topic: "${topic}"\nWebsite hostname: ${hostname}\nPage title: "${title || ""}"\n\nIs this website/page likely relevant to studying the topic above? Reply in exactly this format, two lines:\nRELEVANT or DISTRACTING\n<a short one-sentence reason why, under 15 words>`,
+            content: `Study topic: "${topic}"\nWebsite hostname: ${hostname}\nPage title: "${title || ""}"\n\nIs this website/page likely relevant to studying the topic above?\n\nGuidelines:\n- If this is a generic homepage, search page, or other navigational page with no specific content shown yet (e.g. just "YouTube" or "Google" as the title), treat it as RELEVANT — the user may be about to search for or navigate to on-topic content, and blocking navigation itself would prevent that.\n- Only reply DISTRACTING if the page shows SPECIFIC content (a video, article, product, etc.) that is clearly unrelated to the topic.\n\nReply in exactly this format, two lines:\nRELEVANT or DISTRACTING\n<a short one-sentence reason why, under 15 words>`,
           },
         ],
       }),
