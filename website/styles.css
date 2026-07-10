@@ -6,8 +6,8 @@
   --ink: #201c16;
   --ink-soft: #6b6255;
   --line: rgba(32, 28, 22, 0.16);
-  --accent-red: #e2472c;
-  --accent-orange: #ef9412;
+  --accent-1: #14746b;
+  --accent-2: #3fae82;
 }
 
 * {
@@ -35,7 +35,7 @@ a {
 }
 
 .gradient-text {
-  background: linear-gradient(90deg, var(--accent-red), var(--accent-orange));
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -44,7 +44,7 @@ a {
 .btn-primary {
   display: inline-block;
   padding: 13px 26px;
-  background: linear-gradient(90deg, var(--accent-red), var(--accent-orange));
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
   color: #fff8ee;
   border: 2px solid var(--ink);
   border-radius: 10px;
@@ -85,7 +85,7 @@ a {
 }
 
 .field-error {
-  color: var(--accent-red);
+  color: var(--accent-1);
   font-size: 13px;
   min-height: 16px;
   margin: 4px 0 8px;
@@ -264,7 +264,7 @@ input::placeholder {
   filter: blur(40px);
   opacity: 0.35;
 }
-.mini-blob.one { width: 140px; height: 140px; background: #e74c3c; top: -50px; left: -50px; }
+.mini-blob.one { width: 140px; height: 140px; background: #14746b; top: -50px; left: -50px; }
 .mini-blob.two { width: 120px; height: 120px; background: #6c5ce7; bottom: -50px; right: -40px; }
 
 .mini-lock-ring {
@@ -277,7 +277,7 @@ input::placeholder {
 .mini-lock-ring .ring-bg { fill: none; stroke: rgba(255, 255, 255, 0.08); stroke-width: 4; }
 .mini-lock-ring .ring-progress {
   fill: none;
-  stroke: #e74c3c;
+  stroke: #14746b;
   stroke-width: 4;
   stroke-linecap: round;
 }
@@ -292,7 +292,7 @@ input::placeholder {
   font-family: "Fraunces", serif;
   font-size: 18px;
   margin: 0 0 8px;
-  background: linear-gradient(90deg, #e74c3c, #f39c12);
+  background: linear-gradient(90deg, #14746b, #3fae82);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -300,9 +300,9 @@ input::placeholder {
 }
 .mini-site-pill {
   display: inline-block;
-  background: rgba(231, 76, 60, 0.15);
-  border: 1px solid rgba(231, 76, 60, 0.4);
-  color: #ff8a75;
+  background: rgba(20, 116, 107, 0.15);
+  border: 1px solid rgba(20, 116, 107, 0.4);
+  color: #7fd9c4;
   font-size: 11px;
   font-weight: 600;
   padding: 3px 10px;
@@ -332,7 +332,7 @@ input::placeholder {
   font-family: "Fraunces", serif;
   font-size: 28px;
   font-weight: 700;
-  background: linear-gradient(90deg, #e74c3c, #f39c12);
+  background: linear-gradient(90deg, #14746b, #3fae82);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -372,7 +372,7 @@ input::placeholder {
   font-weight: 600;
   line-height: 1;
   margin-bottom: 10px;
-  background: linear-gradient(90deg, var(--accent-red), var(--accent-orange));
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -411,7 +411,7 @@ input::placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--accent-red);
+  color: var(--accent-1);
 }
 
 .icon {
@@ -576,7 +576,7 @@ input::placeholder {
   background: var(--paper-2);
 }
 .preset-chip.added {
-  background: linear-gradient(90deg, var(--accent-red), var(--accent-orange));
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
   color: #fff8ee;
   border-color: var(--ink);
   font-weight: 600;
@@ -635,7 +635,7 @@ ul.chip-list li {
 ul.chip-list li button {
   background: none;
   border: none;
-  color: var(--accent-red);
+  color: var(--accent-1);
   cursor: pointer;
   font-size: 14px;
   font-weight: 700;
@@ -654,7 +654,7 @@ ul.chip-list li button {
 .add-row input { margin-bottom: 0; }
 .add-row button {
   padding: 12px 16px;
-  background: linear-gradient(90deg, var(--accent-red), var(--accent-orange));
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
   color: #fff8ee;
   border: 2px solid var(--ink);
   border-radius: 8px;

@@ -18,8 +18,8 @@
         --ink: #201c16;
         --ink-soft: #6b6255;
         --line: rgba(32, 28, 22, 0.16);
-        --accent-red: #e2472c;
-        --accent-orange: #ef9412;
+        --accent-1: #14746b;
+        --accent-2: #3fae82;
       }
 
       body {
@@ -45,7 +45,7 @@
       }
       .logo-icon { width: 22px; height: 22px; border-radius: 6px; display: block; }
       .gradient-text {
-        background: linear-gradient(90deg, var(--accent-red), var(--accent-orange));
+        background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
@@ -88,7 +88,7 @@
         border-radius: 50%;
         transition: 0.2s;
       }
-      input:checked + .slider { background: linear-gradient(90deg, var(--accent-red), var(--accent-orange)); }
+      input:checked + .slider { background: linear-gradient(90deg, var(--accent-1), var(--accent-2)); }
       input:checked + .slider::before { transform: translateX(20px); background-color: #fff8ee; }
 
       .session-box {
@@ -106,7 +106,7 @@
         font-weight: 700;
         font-variant-numeric: tabular-nums;
         margin-bottom: 4px;
-        background: linear-gradient(90deg, var(--accent-red), var(--accent-orange));
+        background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
@@ -138,7 +138,7 @@
         transition: background 0.15s ease, border-color 0.15s ease;
       }
       .presets button.selected {
-        background: linear-gradient(90deg, var(--accent-red), var(--accent-orange));
+        background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
         color: #fff8ee;
         border-color: var(--ink);
         font-weight: 600;
@@ -155,7 +155,7 @@
         transition: transform 0.15s ease, box-shadow 0.15s ease;
       }
       #startSession {
-        background: linear-gradient(90deg, var(--accent-red), var(--accent-orange));
+        background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
         color: #fff8ee;
         box-shadow: 3px 3px 0 var(--ink);
       }
