@@ -5,3 +5,7 @@
 const SUPABASE_URL = "https://kgzqnqzoighlxeqdkrzg.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnenFucXpvaWdobHhlcWRrcnpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxMDg0MjgsImV4cCI6MjA5ODY4NDQyOH0.V-e-OiPrrKMDahniFYpM0p1Hz2Ix2pfqz1tun-EFiBI";
+
+// Backend proxy (website/api/classify.js) — lets signed-in users classify
+// without their own Anthropic key. Fill in once the website is deployed.
+const CLASSIFY_PROXY_URL = "https://YOUR-DEPLOYED-DOMAIN.vercel.app/api/classify";

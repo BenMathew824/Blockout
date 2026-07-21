@@ -1,4 +1,4 @@
-importScripts("config.js", "auth.js", "sync.js");
+importScripts("config.js", "auth.js", "sync.js", "allowlist.js");
 
 const SESSION_END_ALARM = "focusSessionEnd";
 const SESSION_TICK_ALARM = "focusSessionTick";
@@ -36,12 +36,35 @@ chrome.runtime.onStartup.addListener(updateBadge);
 // should still bust the cache and reclassify.
 const classificationCache = new Map();
 
-async function classifyTabRelevance(hostname, url, title, topic, apiKey) {
-  const cacheKey = `${url}|${title}|${topic}`;
-  if (classificationCache.has(cacheKey)) {
-    return classificationCache.get(cacheKey);
-  }
+const CLASSIFY_PROMPT = (hostname, title, topic) =>
+  `Study topic: "${topic}"\nWebsite hostname: ${hostname}\nPage title: "${title || ""}"\n\nIs this website/page likely relevant to studying the topic above?\n\nGuidelines:\n- If this is a generic homepage, search page, or other navigational page with no specific content shown yet (e.g. just "YouTube" or "Google" as the title), treat it as RELEVANT — the user may be about to search for or navigate to on-topic content, and blocking navigation itself would prevent that.\n- Only reply DISTRACTING if the page shows SPECIFIC content (a video, article, product, etc.) that is clearly unrelated to the topic.\n\nReply in exactly this format, two lines:\nRELEVANT or DISTRACTING\n<a short one-sentence reason why, under 15 words>`;
 
+function parseClassifyResponseText(rawText) {
+  const lines = rawText.trim().split("\n").map((line) => line.trim()).filter(Boolean);
+  const verdict = (lines[0] || "").toUpperCase();
+  return { isDistracting: verdict.includes("DISTRACTING"), reason: lines.slice(1).join(" ").trim() };
+}
+
+// Signed-in path: server holds the Anthropic key, so no key ever needs to
+// live in the browser. Returns null (rather than throwing) on any failure —
+// including a 429 from the daily-cap check — so the caller falls back to the
+// user's own key instead of failing the whole classification.
+async function classifyViaProxy(hostname, title, topic, accessToken) {
+  try {
+    const response = await fetch(CLASSIFY_PROXY_URL, {
+      method: "POST",
+      headers: { "content-type": "application/json", Authorization: `Bearer ${accessToken}` },
+      body: JSON.stringify({ hostname, title, topic }),
+    });
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (err) {
+    return null;
+  }
+}
+
+// Fallback path: the user's own key, called directly from the browser.
+async function classifyViaAnthropic(hostname, title, topic, apiKey) {
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -54,45 +77,47 @@ async function classifyTabRelevance(hostname, url, title, topic, apiKey) {
       body: JSON.stringify({
         model: "claude-haiku-4-5",
         max_tokens: 60,
-        messages: [
-          {
-            role: "user",
-            content: `Study topic: "${topic}"\nWebsite hostname: ${hostname}\nPage title: "${title || ""}"\n\nIs this website/page likely relevant to studying the topic above?\n\nGuidelines:\n- If this is a generic homepage, search page, or other navigational page with no specific content shown yet (e.g. just "YouTube" or "Google" as the title), treat it as RELEVANT — the user may be about to search for or navigate to on-topic content, and blocking navigation itself would prevent that.\n- Only reply DISTRACTING if the page shows SPECIFIC content (a video, article, product, etc.) that is clearly unrelated to the topic.\n\nReply in exactly this format, two lines:\nRELEVANT or DISTRACTING\n<a short one-sentence reason why, under 15 words>`,
-          },
-        ],
+        messages: [{ role: "user", content: CLASSIFY_PROMPT(hostname, title, topic) }],
       }),
     });
 
     if (!response.ok) {
       const errBody = await response.text();
       console.warn("Blockout: classification request failed", response.status, errBody);
-      return { isDistracting: false, reason: "" };
+      return null;
     }
 
     const data = await response.json();
-    const rawText = (data.content?.[0]?.text || "").trim();
-    const lines = rawText.split("\n").map((line) => line.trim()).filter(Boolean);
-    const verdict = (lines[0] || "").toUpperCase();
-    const isDistracting = verdict.includes("DISTRACTING");
-    const reason = lines.slice(1).join(" ").trim();
-    console.log(
-      "Blockout: classified",
-      hostname,
-      `("${title}") as`,
-      verdict || "(empty response)",
-      reason ? `— ${reason}` : ""
-    );
-    const result = { isDistracting, reason };
-    classificationCache.set(cacheKey, result);
-    return result;
+    return parseClassifyResponseText(data.content?.[0]?.text || "");
   } catch (err) {
     console.warn("Blockout: classification error", err);
-    return { isDistracting: false, reason: "" };
+    return null;
   }
 }
 
-function matchesAllowlist(hostname, allowlist) {
-  return allowlist.some((site) => hostname === site || hostname.endsWith("." + site));
+async function classifyTabRelevance(hostname, url, title, topic, { apiKey, accessToken } = {}) {
+  const cacheKey = `${url}|${title}|${topic}`;
+  if (classificationCache.has(cacheKey)) {
+    return classificationCache.get(cacheKey);
+  }
+
+  let result = accessToken ? await classifyViaProxy(hostname, title, topic, accessToken) : null;
+  if (!result && apiKey) {
+    result = await classifyViaAnthropic(hostname, title, topic, apiKey);
+  }
+  if (!result) {
+    result = { isDistracting: false, reason: "" };
+  }
+
+  console.log(
+    "Blockout: classified",
+    hostname,
+    `("${title}") as`,
+    result.isDistracting ? "DISTRACTING" : "RELEVANT",
+    result.reason ? `— ${result.reason}` : ""
+  );
+  classificationCache.set(cacheKey, result);
+  return result;
 }
 
 const YOUTUBE_HOSTNAME = /(^|\.)youtube\.com$/;
@@ -223,10 +248,12 @@ async function runClassification(tabId) {
   }
 
   const localData = await chrome.storage.local.get(["studyTopic", "anthropicApiKey"]);
-  if (!localData.studyTopic || !localData.anthropicApiKey) {
+  const session = await refreshIfNeeded();
+  if (!localData.studyTopic || (!localData.anthropicApiKey && !session)) {
     console.log("Blockout: skipped", url, {
       hasStudyTopic: !!localData.studyTopic,
       hasApiKey: !!localData.anthropicApiKey,
+      signedIn: !!session,
     });
     return;
   }
@@ -246,7 +273,7 @@ async function runClassification(tabId) {
     url,
     title,
     localData.studyTopic,
-    localData.anthropicApiKey
+    { apiKey: localData.anthropicApiKey, accessToken: session?.access_token }
   );
   if (isDistracting) {
     recordBlock(hostname);
@@ -447,6 +474,32 @@ chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => 
   }
   if (message?.type === "AUTH_SIGN_OUT") {
     chrome.storage.local.remove("authSession", () => sendResponse({ ok: true }));
+    return true;
+  }
+  // Lets the dashboard's session card mirror and control the real session
+  // without polling chrome.storage directly (a website can't read it).
+  if (message?.type === "GET_SESSION_STATE") {
+    chrome.storage.local.get(
+      ["sessionActive", "sessionEndTime", "studyTopic", "sessionStats"],
+      (data) => {
+        sendResponse({
+          sessionActive: !!data.sessionActive,
+          sessionEndTime: data.sessionEndTime || null,
+          studyTopic: data.studyTopic || "",
+          sessionStats: data.sessionStats || { totalBlocks: 0, siteCounts: {} },
+        });
+      }
+    );
+    return true;
+  }
+  if (message?.type === "START_SESSION") {
+    startSession(message.minutes, message.topic);
+    sendResponse({ ok: true });
+    return true;
+  }
+  if (message?.type === "STOP_SESSION") {
+    stopSession();
+    sendResponse({ ok: true });
     return true;
   }
 });

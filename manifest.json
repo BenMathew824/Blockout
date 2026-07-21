@@ -4,7 +4,11 @@
   "version": "1.0",
   "description": "AI-powered study focus tool",
   "permissions": ["tabs", "storage", "alarms", "webNavigation", "notifications"],
-  "host_permissions": ["https://api.anthropic.com/*", "https://*.supabase.co/*"],
+  "host_permissions": [
+    "https://api.anthropic.com/*",
+    "https://*.supabase.co/*",
+    "https://YOUR-DEPLOYED-DOMAIN.vercel.app/*"
+  ],
   "background": {
     "service_worker": "background.js"
   },

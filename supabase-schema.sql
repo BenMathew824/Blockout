@@ -32,9 +32,20 @@ create table if not exists public.study_days (
   unique (user_id, day)
 );
 
+-- One row per (user, day), used by the /api/classify proxy to enforce a
+-- daily cap on server-funded (no-own-API-key) classification requests.
+create table if not exists public.classification_usage (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  day         date not null,
+  count       integer not null default 0,
+  unique (user_id, day)
+);
+
 alter table public.allowlist enable row level security;
 alter table public.site_blocks enable row level security;
 alter table public.study_days enable row level security;
+alter table public.classification_usage enable row level security;
 
 drop policy if exists "own allowlist rows" on public.allowlist;
 create policy "own allowlist rows" on public.allowlist
@@ -46,6 +57,10 @@ create policy "own site_blocks rows" on public.site_blocks
 
 drop policy if exists "own study_days rows" on public.study_days;
 create policy "own study_days rows" on public.study_days
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "own classification_usage rows" on public.classification_usage;
+create policy "own classification_usage rows" on public.classification_usage
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- Atomic increment (avoids read-modify-write races). Called via:
@@ -69,4 +84,20 @@ language sql
 security definer
 as $$
   delete from public.site_blocks where user_id = auth.uid();
+$$;
+
+-- Atomically bumps today's classification_usage row for the calling user and
+-- returns the new count. The /api/classify proxy calls this only after
+-- confirming (via a prior select) that the caller is still under the daily
+-- cap, so this function itself has no notion of the limit — it just counts.
+create or replace function public.increment_classification_count()
+returns integer
+language sql
+security definer
+as $$
+  insert into public.classification_usage (user_id, day, count)
+  values (auth.uid(), current_date, 1)
+  on conflict (user_id, day)
+  do update set count = classification_usage.count + 1
+  returning count;
 $$;

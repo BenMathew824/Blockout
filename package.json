@@ -1,0 +1,8 @@
+{
+  "name": "blockout",
+  "private": true,
+  "description": "AI-powered study focus Chrome extension + companion website",
+  "scripts": {
+    "test": "node --test"
+  }
+}

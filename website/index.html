@@ -82,6 +82,60 @@
       </div>
     </section>
 
+    <section class="demo-section">
+      <h2 class="section-title">Try the classifier</h2>
+      <p class="demo-intro">Set a topic, then click a page below — this mirrors the check Blockout runs against every tab in a real session.</p>
+
+      <div class="demo-shell">
+        <div class="demo-side">
+          <div class="demo-controls">
+            <label for="demoTopic" class="demo-label">Studying</label>
+            <input type="text" id="demoTopic" class="demo-topic-input" value="Calculus 1" maxlength="40" />
+          </div>
+          <div class="demo-sites" id="demoSites">
+            <button type="button" class="demo-site-chip" data-url="khanacademy.org/math/calculus-1" data-verdict="allowed" data-reason="Direct calculus coursework.">khanacademy.org/…/calculus-1</button>
+            <button type="button" class="demo-site-chip" data-url="desmos.com/calculator" data-verdict="allowed" data-reason="Graphing tool used for calculus problems.">desmos.com/calculator</button>
+            <button type="button" class="demo-site-chip" data-url="wikipedia.org/wiki/Derivative" data-verdict="allowed" data-reason="Reference page on derivatives.">wikipedia.org/wiki/Derivative</button>
+            <button type="button" class="demo-site-chip" data-url="youtube.com/watch?v=cat-fails" data-verdict="blocked" data-reason="Entertainment, unrelated to coursework.">youtube.com/watch?v=cat-fails</button>
+            <button type="button" class="demo-site-chip" data-url="instagram.com/explore" data-verdict="blocked" data-reason="Social feed, no topical connection.">instagram.com/explore</button>
+            <button type="button" class="demo-site-chip" data-url="reddit.com/r/all" data-verdict="blocked" data-reason="General browsing, off-topic.">reddit.com/r/all</button>
+          </div>
+        </div>
+
+        <div class="browser-mockup demo-mockup" id="demoMockup">
+          <div class="browser-bar">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+            <div class="browser-url" id="demoUrl">click a page on the left</div>
+          </div>
+          <div class="browser-content" id="demoContent">
+            <div class="mini-blob one"></div>
+            <div class="mini-blob two"></div>
+            <div class="demo-idle" id="demoIdle">
+              <p>Pick a page to see how Blockout would classify it against your topic.</p>
+            </div>
+            <div class="demo-result" id="demoResult" style="display: none;">
+              <div class="mini-lock-ring">
+                <svg width="72" height="72">
+                  <circle class="ring-bg" cx="36" cy="36" r="30" />
+                  <circle class="ring-progress" id="demoRingProgress" cx="36" cy="36" r="30" style="stroke-dasharray: 188.5; stroke-dashoffset: 188.5;" />
+                </svg>
+                <div class="mini-lock-icon" id="demoResultIcon"></div>
+              </div>
+              <div class="demo-checking-label" id="demoCheckingLabel">Checking…</div>
+              <div class="demo-result-info" id="demoResultInfo">
+                <h3 class="mini-heading" id="demoResultHeading"></h3>
+                <div class="mini-site-pill" id="demoResultSite"></div>
+                <p class="mini-subtitle" id="demoResultReason"></p>
+                <div class="mini-topic"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 3px;"><path d="M12 6c-2-1.5-5-1.5-8-1v13c3-.5 6-.5 8 1c2-1.5 5-1.5 8-1V5c-3-.5-6-.5-8 1Z"/><path d="M12 6v13"/></svg>Focusing on: <strong id="demoResultTopic"></strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="features-split">
       <div class="features-visual">
         <div class="browser-mockup small">
@@ -151,5 +205,7 @@
         <a href="https://github.com/BenMathew824/blockout">GitHub</a>
       </div>
     </footer>
+
+    <script src="demo.js" defer></script>
   </body>
 </html>

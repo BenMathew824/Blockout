@@ -38,3 +38,40 @@ export function pushSignOutToExtension() {
     void chrome.runtime.lastError; // ignore — same as above
   });
 }
+
+// Two-way call used by the dashboard's session card. Resolves to `null`
+// (never rejects) when the extension isn't installed, isn't reachable from
+// this origin, or doesn't answer within timeoutMs — the caller treats null
+// as "no extension" rather than distinguishing the reason.
+function callExtension(message, timeoutMs = 1200) {
+  return new Promise((resolve) => {
+    if (!hasExtensionMessaging()) {
+      resolve(null);
+      return;
+    }
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      resolve(null);
+    }, timeoutMs);
+    chrome.runtime.sendMessage(EXTENSION_ID, message, (response) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(chrome.runtime.lastError ? null : response || null);
+    });
+  });
+}
+
+export function getExtensionSessionState() {
+  return callExtension({ type: "GET_SESSION_STATE" });
+}
+
+export function startExtensionSession(minutes, topic) {
+  return callExtension({ type: "START_SESSION", minutes, topic });
+}
+
+export function stopExtensionSession() {
+  return callExtension({ type: "STOP_SESSION" });
+}

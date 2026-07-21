@@ -53,13 +53,27 @@
 
       <h2>Where that data goes</h2>
       <p>
-        The hostname, title, and the study topic you typed in are sent directly from your
-        browser to <strong>Anthropic's Claude API</strong>, using an API key you provide
-        yourself in the extension's settings. Blockout's own infrastructure never receives
-        or stores this data — the request goes straight from your browser to Anthropic.
-        Your API key is stored only in your browser's local extension storage and is never
-        transmitted anywhere except to Anthropic, as part of that same request.
+        There are two ways a classification request can be made, depending on whether
+        you've provided your own API key:
       </p>
+      <ul>
+        <li>
+          <strong>With your own Anthropic API key</strong> (no account required): the
+          hostname, title, and study topic are sent directly from your browser to
+          <strong>Anthropic's Claude API</strong>. Blockout's own infrastructure never
+          receives or stores this data. Your key is stored only in your browser's local
+          extension storage and is never transmitted anywhere except to Anthropic, as
+          part of that same request.
+        </li>
+        <li>
+          <strong>Signed in, without your own key</strong>: the hostname, title, and study
+          topic are sent to Blockout's backend (a serverless function), which forwards
+          them to Anthropic using Blockout's own key and returns the result. Blockout's
+          backend does not log or store the hostname, title, or topic — it only records
+          a per-day request count against your account, used solely to enforce a daily
+          usage cap.
+        </li>
+      </ul>
 
       <h2>If you create an account</h2>
       <p>

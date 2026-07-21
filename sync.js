@@ -151,6 +151,10 @@ async function getCurrentStreak() {
   }
 }
 
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { computeStreak };
+}
+
 async function flushPendingQueue() {
   const headers = await getAuthHeaders();
   if (!headers) return;

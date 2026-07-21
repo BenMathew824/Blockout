@@ -15,6 +15,10 @@
         </div>
       </div>
 
+      <div class="card session-card">
+        <div id="sessionCardBody"></div>
+      </div>
+
       <div class="dashboard-grid">
         <div class="card">
           <div id="streakRow" class="streak-row" style="display: none;">
@@ -39,6 +43,15 @@
             <button id="addSite">Add</button>
           </div>
           <div id="addSiteError" class="field-error"></div>
+        </div>
+      </div>
+
+      <div class="card activity-card">
+        <h2>Study Activity</h2>
+        <div class="heatmap" id="activityHeatmap"></div>
+        <div class="heatmap-legend">
+          <span class="hm-cell"></span><span>No session</span>
+          <span class="hm-cell hm-active"></span><span>Studied</span>
         </div>
       </div>
     </div>

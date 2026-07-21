@@ -38,9 +38,10 @@ FEATURES
   you're not looking at the tab
 
 WHAT IT NEEDS FROM YOU
-Blockout uses Anthropic's Claude API to classify pages, and you provide your own API key
-in the extension's settings — Blockout's own servers never see your browsing data, it
-goes directly from your browser to Anthropic.
+Blockout uses Anthropic's Claude API to classify pages. Sign in and it works out of the
+box, routed through Blockout's backend with a daily usage cap — or provide your own
+Anthropic API key in the extension's settings and requests go directly from your browser
+to Anthropic instead, with no account required.
 
 Full privacy policy: [ADD DEPLOYED WEBSITE URL]/privacy.html
 
