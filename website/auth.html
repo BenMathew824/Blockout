@@ -16,10 +16,24 @@
         <button class="mode-tab" data-mode="signup">Sign Up</button>
       </div>
 
-      <input type="email" id="email" placeholder="Email" />
-      <input type="password" id="password" placeholder="Password" />
-      <div id="error" class="field-error"></div>
-      <button id="submit" class="btn-primary" style="width: 100%">Sign In</button>
+      <div id="credentialsForm">
+        <input type="email" id="email" placeholder="Email" />
+        <input type="password" id="password" placeholder="Password" />
+        <div class="auth-links" id="forgotPasswordRow">
+          <button type="button" id="forgotPasswordLink" class="link-btn">Forgot password?</button>
+        </div>
+        <div id="error" class="field-error"></div>
+        <button id="submit" class="btn-primary" style="width: 100%">Sign In</button>
+      </div>
+
+      <div id="forgotForm" hidden>
+        <p class="card-subtitle">Enter your email and we'll send you a link to reset your password.</p>
+        <input type="email" id="forgotEmail" placeholder="Email" />
+        <div id="forgotError" class="field-error"></div>
+        <div id="forgotSuccess" class="field-hint"></div>
+        <button id="forgotSubmit" class="btn-primary" style="width: 100%">Send Reset Link</button>
+        <button type="button" id="backToSignIn" class="link-btn" style="display: block; margin: 12px auto 0;">← Back to Sign In</button>
+      </div>
     </div>
 
     <script type="module" src="auth.js"></script>

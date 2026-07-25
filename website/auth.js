@@ -6,6 +6,7 @@ const passwordInput = document.getElementById("password");
 const errorEl = document.getElementById("error");
 const modeTabs = document.querySelectorAll(".mode-tab");
 const submitBtn = document.getElementById("submit");
+const forgotPasswordRow = document.getElementById("forgotPasswordRow");
 
 let mode = "signin";
 
@@ -14,8 +15,50 @@ modeTabs.forEach((tab) => {
     mode = tab.dataset.mode;
     modeTabs.forEach((t) => t.classList.toggle("selected", t === tab));
     submitBtn.textContent = mode === "signin" ? "Sign In" : "Sign Up";
+    // Resetting a password only makes sense from the sign-in side.
+    forgotPasswordRow.style.display = mode === "signin" ? "flex" : "none";
     errorEl.textContent = "";
   });
+});
+
+// --- Forgot password: swaps the credentials form for an email-only panel
+// that calls Supabase's resetPasswordForEmail. The emailed link lands the
+// user on reset-password.html with a recovery session already established
+// (supabase-js parses the recovery token from the URL automatically).
+const credentialsForm = document.getElementById("credentialsForm");
+const forgotForm = document.getElementById("forgotForm");
+const forgotEmailInput = document.getElementById("forgotEmail");
+const forgotErrorEl = document.getElementById("forgotError");
+const forgotSuccessEl = document.getElementById("forgotSuccess");
+
+document.getElementById("forgotPasswordLink").addEventListener("click", () => {
+  forgotEmailInput.value = emailInput.value;
+  forgotErrorEl.textContent = "";
+  forgotSuccessEl.textContent = "";
+  credentialsForm.hidden = true;
+  forgotForm.hidden = false;
+});
+
+document.getElementById("backToSignIn").addEventListener("click", () => {
+  forgotForm.hidden = true;
+  credentialsForm.hidden = false;
+});
+
+document.getElementById("forgotSubmit").addEventListener("click", async () => {
+  forgotErrorEl.textContent = "";
+  forgotSuccessEl.textContent = "";
+  const email = forgotEmailInput.value.trim();
+  if (!email) return;
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password.html`,
+  });
+
+  if (error) {
+    forgotErrorEl.textContent = error.message;
+    return;
+  }
+  forgotSuccessEl.textContent = "Check your email for a link to reset your password.";
 });
 
 submitBtn.addEventListener("click", async () => {
