@@ -8,4 +8,4 @@ const SUPABASE_ANON_KEY =
 
 // Backend proxy (website/api/classify.js) — lets signed-in users classify
 // without their own Anthropic key. Fill in once the website is deployed.
-const CLASSIFY_PROXY_URL = "https://YOUR-DEPLOYED-DOMAIN.vercel.app/api/classify";
+const CLASSIFY_PROXY_URL = "https://website-five-coral-51.vercel.app/api/classify";

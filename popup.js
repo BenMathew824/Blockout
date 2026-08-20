@@ -3,7 +3,6 @@ const toggleRow = focusToggle.closest(".toggle-row");
 const sessionActiveBox = document.getElementById("sessionActiveBox");
 const sessionSetupBox = document.getElementById("sessionSetupBox");
 const countdownEl = document.getElementById("countdown");
-const sessionBlockCountEl = document.getElementById("sessionBlockCount");
 const presetButtons = document.querySelectorAll(".presets button");
 const modeTabs = document.querySelectorAll(".mode-tab");
 const durationMode = document.getElementById("durationMode");
@@ -14,9 +13,17 @@ const untilTime = document.getElementById("untilTime");
 const studyTopicInput = document.getElementById("studyTopic");
 const studyTopicDisplay = document.getElementById("studyTopicDisplay");
 const apiKeyInput = document.getElementById("apiKeyInput");
+const candleBody = document.getElementById("candleBody");
+const wickNub = document.getElementById("wickNub");
+const flameSvg = document.getElementById("flameSvg");
+const candleCaption = document.getElementById("candleCaption");
+const meltDrip = document.getElementById("meltDrip");
+const waxPool = document.getElementById("waxPool");
 
 let sessionMode = "duration";
 let countdownInterval = null;
+let lastSeenSessionBlocks = 0;
+let currentSessionBlocks = 0;
 
 function formatTime(ms) {
   const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
@@ -29,8 +36,57 @@ function formatTime(ms) {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
-function startCountdown(sessionEndTime) {
+// Candle: burns down over the course of a session (burnFraction 0 -> 1),
+// the TikTok "study until the candle melts" mechanic. Idle shows a fresh,
+// unburnt candle; ending a session early snuffs the flame briefly instead
+// of just silently resetting.
+const CANDLE_MAX_HEIGHT = 44;
+const CANDLE_MIN_HEIGHT = 8;
+const CANDLE_BASE_Y = 64;
+
+function setCandleBurn(burnFraction) {
+  const fraction = Math.max(0, Math.min(1, burnFraction));
+  const height = CANDLE_MAX_HEIGHT - (CANDLE_MAX_HEIGHT - CANDLE_MIN_HEIGHT) * fraction;
+  const y = CANDLE_BASE_Y - height;
+  candleBody.setAttribute("height", height.toFixed(1));
+  candleBody.setAttribute("y", y.toFixed(1));
+  wickNub.setAttribute("y", (y - 5).toFixed(1));
+  flameSvg.setAttribute("y", (y - 27).toFixed(1));
+
+  // A visible drip running down the candle's side and a widening wax pool
+  // at the base — both grow monotonically, which reads as "melting" far
+  // more clearly than the small height change alone.
+  meltDrip.setAttribute("y", (y + 2).toFixed(1));
+  meltDrip.setAttribute("height", (fraction * 40).toFixed(1));
+  waxPool.setAttribute("rx", (16 + fraction * 11).toFixed(1));
+  waxPool.setAttribute("ry", (5 + fraction * 4.5).toFixed(1));
+}
+
+function renderIdleCandle(lifetimeStats) {
+  flameSvg.classList.remove("snuffed");
+  setCandleBurn(0);
+  candleCaption.textContent = lifetimeStats?.totalBlocks ? "a fresh candle" : "ready to light";
+}
+
+function renderActiveCandle(progress, sessionBlocks) {
+  flameSvg.classList.remove("snuffed");
+  setCandleBurn(progress);
+  candleCaption.textContent = sessionBlocks > 0 ? `${sessionBlocks} blocked along the way` : "burning while you focus";
+}
+
+function flareCandle() {
+  flameSvg.classList.add("flare");
+  setTimeout(() => flameSvg.classList.remove("flare"), 260);
+}
+
+function snuffCandle() {
+  flameSvg.classList.add("snuffed");
+  candleCaption.textContent = "snuffed out early";
+}
+
+function startCountdown(sessionStartTime, sessionEndTime) {
   clearInterval(countdownInterval);
+  const total = Math.max(1, sessionEndTime - sessionStartTime);
   const tick = () => {
     const remaining = sessionEndTime - Date.now();
     if (remaining <= 0) {
@@ -39,6 +95,8 @@ function startCountdown(sessionEndTime) {
       return;
     }
     countdownEl.textContent = formatTime(remaining);
+    const progress = Math.min(1, Math.max(0, 1 - remaining / total));
+    renderActiveCandle(progress, currentSessionBlocks);
   };
   tick();
   countdownInterval = setInterval(tick, 1000);
@@ -47,11 +105,13 @@ function startCountdown(sessionEndTime) {
 function renderSessionBlockCount(sessionStats) {
   const count = sessionStats?.totalBlocks || 0;
   document.getElementById("sessionBlockCountText").textContent = `${count} blocked this session`;
+  lastSeenSessionBlocks = count;
+  currentSessionBlocks = count;
 }
 
 function renderSessionState() {
   chrome.storage.local.get(
-    ["sessionActive", "sessionEndTime", "studyTopic", "sessionStats"],
+    ["sessionActive", "sessionStartTime", "sessionEndTime", "studyTopic", "sessionStats", "lifetimeStats"],
     (data) => {
       if (data.sessionActive && data.sessionEndTime) {
         sessionActiveBox.style.display = "block";
@@ -60,12 +120,13 @@ function renderSessionState() {
         studyTopicDisplay.style.display = data.studyTopic ? "flex" : "none";
         document.getElementById("studyTopicText").textContent = data.studyTopic || "";
         renderSessionBlockCount(data.sessionStats);
-        startCountdown(data.sessionEndTime);
+        startCountdown(data.sessionStartTime || Date.now(), data.sessionEndTime);
       } else {
         sessionActiveBox.style.display = "none";
         sessionSetupBox.style.display = "block";
         toggleRow.style.display = "flex";
         clearInterval(countdownInterval);
+        renderIdleCandle(data.lifetimeStats);
       }
     }
   );
@@ -100,7 +161,9 @@ document.getElementById("saveApiKey").addEventListener("click", () => {
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes.sessionStats) {
+    const newCount = changes.sessionStats.newValue?.totalBlocks || 0;
     renderSessionBlockCount(changes.sessionStats.newValue);
+    if (newCount > lastSeenSessionBlocks) flareCandle();
   }
 });
 
@@ -164,9 +227,14 @@ document.getElementById("startSession").addEventListener("click", () => {
 });
 
 document.getElementById("stopSession").addEventListener("click", () => {
-  chrome.runtime.sendMessage({ type: "stopSession" }, () => {
-    renderSessionState();
-  });
+  // A quick snuff before the state actually flips, so ending early
+  // reads as a real (small) cost rather than a silent no-op.
+  snuffCandle();
+  setTimeout(() => {
+    chrome.runtime.sendMessage({ type: "stopSession" }, () => {
+      renderSessionState();
+    });
+  }, 380);
 });
 
 load();

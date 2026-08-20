@@ -7,24 +7,32 @@
     </style>
   </head>
   <body>
+    <!-- Blockout mark: a candle burning on a hearth-brown badge, matching the
+         "study until the candle melts" mechanic used in the popup/blocked page. -->
     <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 128 128">
       <defs>
-        <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#14746b" />
-          <stop offset="100%" stop-color="#3fae82" />
+        <linearGradient id="waxGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#f4e9d8" />
+          <stop offset="100%" stop-color="#e3d3ba" />
+        </linearGradient>
+        <linearGradient id="flameGrad" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stop-color="#ff9d4d" />
+          <stop offset="100%" stop-color="#ffd166" />
         </linearGradient>
       </defs>
-      <rect x="4" y="4" width="120" height="120" rx="30" fill="url(#g)" />
+      <rect x="4" y="4" width="120" height="120" rx="28" fill="#241a14" />
+      <ellipse cx="64" cy="112" rx="28" ry="7" fill="#e3d3ba" opacity="0.45" />
+      <rect x="44" y="48" width="40" height="62" rx="8" fill="url(#waxGrad)" />
+      <rect x="61" y="39" width="4" height="10" fill="#3a2a1c" />
       <path
-        d="M46 58 V45 a18 18 0 0 1 36 0 V58"
-        fill="none"
-        stroke="white"
-        stroke-width="9"
-        stroke-linecap="round"
+        d="M64 6C56 16 51 26 51 34C51 44 57 50 64 50C71 50 77 44 77 34C77 26 72 16 64 6Z"
+        fill="url(#flameGrad)"
       />
-      <rect x="37" y="56" width="54" height="44" rx="11" fill="white" />
-      <circle cx="64" cy="75" r="6.5" fill="url(#g)" />
-      <rect x="61" y="79" width="6" height="13" rx="3" fill="url(#g)" />
+      <path
+        d="M64 22C59 30 56 36 56 40C56 46 59 50 64 50C69 50 72 46 72 40C72 36 69 30 64 22Z"
+        fill="#ffd166"
+        opacity="0.85"
+      />
     </svg>
   </body>
 </html>

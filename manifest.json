@@ -7,7 +7,7 @@
   "host_permissions": [
     "https://api.anthropic.com/*",
     "https://*.supabase.co/*",
-    "https://YOUR-DEPLOYED-DOMAIN.vercel.app/*"
+    "https://website-five-coral-51.vercel.app/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -20,7 +20,7 @@
     }
   ],
   "externally_connectable": {
-    "matches": ["https://YOUR-DEPLOYED-DOMAIN.vercel.app/*", "http://localhost:*/*"]
+    "matches": ["https://website-five-coral-51.vercel.app/*", "http://localhost:*/*"]
   },
   "action": {
     "default_popup": "popup.html",

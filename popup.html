@@ -6,65 +6,101 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&family=Space+Mono:wght@400;700&display=swap"
       rel="stylesheet"
     />
     <style>
       * { box-sizing: border-box; }
 
       :root {
-        --paper: #f7f2e8;
-        --paper-2: #efe7d6;
-        --ink: #201c16;
-        --ink-soft: #6b6255;
-        --line: rgba(32, 28, 22, 0.16);
-        --accent-1: #14746b;
-        --accent-2: #3fae82;
+        --hearth: #241a14;
+        --hearth-2: #33241a;
+        --ember: #ff9d4d;
+        --ember-hot: #ffd166;
+        --ember-deep: #b5651d;
+        --wax: #f4e9d8;
+        --smoke: #a5978a;
+        --line: rgba(244, 233, 216, 0.14);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
       }
 
       body {
         width: 280px;
         padding: 20px;
-        font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-        color: var(--ink);
-        background: var(--paper);
+        font-family: "Nunito", -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--wax);
+        background: var(--hearth);
         margin: 0;
       }
 
-      h1, h2, h3 {
-        font-family: "Fraunces", Georgia, serif;
-        font-weight: 600;
-      }
-
       h1 {
-        font-size: 19px;
-        margin: 0 0 16px;
+        margin: 0 0 6px;
         display: flex;
         align-items: center;
         gap: 8px;
+        font-size: 24px;
       }
-      .logo-icon { width: 22px; height: 22px; border-radius: 6px; display: block; }
-      .gradient-text {
-        background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
+      .logo-icon { width: 20px; height: 20px; border-radius: 5px; display: block; }
+      .wordmark {
+        font-family: "Caveat", cursive;
+        font-weight: 700;
+        font-size: 26px;
+        color: var(--ember-hot);
+        line-height: 1;
       }
+
+      /* --- Candle: always visible, burns down over the course of a session --- */
+      .candle-wrap {
+        text-align: center;
+        margin: 2px 0 14px;
+      }
+      #candleSvg { overflow: visible; }
+      #candleBody, #wickNub, #flameSvg {
+        transition: y 1s linear, height 1s linear, opacity 0.3s ease, transform 0.25s ease;
+      }
+      #meltDrip, #waxPool {
+        transition: height 1s linear, rx 1s linear, ry 1s linear;
+      }
+      #flameSvg {
+        animation: flameFlicker 3.2s ease-in-out infinite;
+        transform-origin: 50% 100%;
+        filter: drop-shadow(0 0 6px rgba(255, 157, 77, 0.55));
+      }
+      #flameSvg.snuffed { opacity: 0; transform: scale(0.4); animation: none; }
+      #flameSvg.flare { filter: drop-shadow(0 0 10px rgba(255, 209, 102, 0.85)); }
+      @keyframes flameFlicker {
+        0%, 100% { transform: scaleX(1) skewX(0deg); }
+        22% { transform: scaleX(0.94) skewX(-1.5deg); }
+        48% { transform: scaleX(1.05) skewX(1.2deg); }
+        75% { transform: scaleX(0.97) skewX(-0.7deg); }
+      }
+      .candle-caption {
+        font-family: "Nunito", sans-serif;
+        font-style: italic;
+        font-size: 12px;
+        color: var(--smoke);
+        margin-top: 4px;
+      }
+
       .icon { vertical-align: middle; flex-shrink: 0; }
 
       .toggle-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-top: 14px;
-        margin-bottom: 16px;
+        margin-top: 16px;
+        margin-bottom: 4px;
         font-size: 13px;
-        font-weight: 500;
+        font-weight: 600;
+        color: var(--smoke);
       }
       .switch {
         position: relative;
-        width: 44px;
-        height: 24px;
+        width: 40px;
+        height: 22px;
         flex-shrink: 0;
       }
       .switch input { opacity: 0; width: 0; height: 0; }
@@ -72,9 +108,9 @@
         position: absolute;
         cursor: pointer;
         inset: 0;
-        background: var(--paper-2);
-        border: 2px solid var(--ink);
-        border-radius: 24px;
+        background: var(--hearth-2);
+        border: 1px solid var(--line);
+        border-radius: 22px;
         transition: 0.2s;
       }
       .slider::before {
@@ -83,43 +119,76 @@
         height: 14px;
         width: 14px;
         left: 3px;
-        bottom: 3px;
-        background-color: var(--ink);
+        top: 3px;
+        background-color: var(--smoke);
         border-radius: 50%;
         transition: 0.2s;
       }
-      input:checked + .slider { background: linear-gradient(90deg, var(--accent-1), var(--accent-2)); }
-      input:checked + .slider::before { transform: translateX(20px); background-color: #fff8ee; }
+      input:checked + .slider { background: linear-gradient(90deg, var(--ember), var(--ember-hot)); border-color: transparent; }
+      input:checked + .slider::before { transform: translateX(18px); background-color: var(--hearth); }
 
       .session-box {
-        background: var(--paper-2);
-        border: 2px solid var(--ink);
+        background: var(--hearth-2);
+        border: 1px solid rgba(255, 157, 77, 0.22);
         border-radius: 14px;
-        box-shadow: 3px 3px 0 var(--line);
         padding: 16px;
         margin-bottom: 16px;
         text-align: center;
       }
+      #studyTopicDisplay {
+        font-family: "Nunito", sans-serif;
+        font-style: italic;
+        font-size: 13px;
+        color: var(--smoke);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
       #countdown {
-        font-family: "Fraunces", serif;
-        font-size: 28px;
+        font-family: "Space Mono", monospace;
         font-weight: 700;
+        font-size: 28px;
         font-variant-numeric: tabular-nums;
-        margin-bottom: 4px;
-        background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
+        color: var(--wax);
+        margin-bottom: 6px;
       }
       #sessionBlockCount {
-        font-size: 12px;
-        color: var(--ink-soft);
-        margin-bottom: 10px;
+        font-family: "Space Mono", monospace;
+        font-size: 11px;
+        color: var(--smoke);
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 5px;
       }
+
+      .mode-tabs {
+        display: flex;
+        gap: 2px;
+        background: var(--hearth-2);
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        padding: 3px;
+        margin-bottom: 8px;
+      }
+      .mode-tab {
+        flex: 1;
+        padding: 6px 0;
+        background: transparent;
+        border: none;
+        color: var(--smoke);
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        font-family: inherit;
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+      }
+      .mode-tab.selected { background: var(--ember); color: var(--hearth); }
+
       .presets {
         display: flex;
         gap: 6px;
@@ -128,97 +197,99 @@
       .presets button {
         flex: 1;
         padding: 8px 0;
-        background: var(--paper);
-        border: 2px solid var(--line);
-        color: var(--ink);
+        background: var(--hearth-2);
+        border: 1px solid var(--line);
+        color: var(--wax);
         border-radius: 8px;
         font-size: 13px;
+        font-weight: 600;
         font-family: inherit;
         cursor: pointer;
-        transition: background 0.15s ease, border-color 0.15s ease;
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
       }
       .presets button.selected {
-        background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-        color: #fff8ee;
-        border-color: var(--ink);
-        font-weight: 600;
+        background: linear-gradient(135deg, var(--ember), var(--ember-hot));
+        border-color: transparent;
+        color: var(--hearth);
+        font-weight: 800;
       }
-      #startSession, #stopSession {
-        width: 100%;
-        padding: 11px;
-        border: 2px solid var(--ink);
-        border-radius: 10px;
-        font-size: 14px;
-        font-weight: 600;
-        font-family: inherit;
-        cursor: pointer;
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-      }
-      #startSession {
-        background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-        color: #fff8ee;
-        box-shadow: 3px 3px 0 var(--ink);
-      }
-      #startSession:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
-      #stopSession { background: var(--paper); color: var(--ink); }
-      #stopSession:hover { background: var(--paper-2); }
 
-      .mode-tabs {
-        display: flex;
-        gap: 6px;
-        margin-bottom: 8px;
-      }
-      .mode-tab {
-        flex: 1;
-        padding: 6px 0;
-        background: var(--paper);
-        border: 2px solid var(--line);
-        color: var(--ink-soft);
-        border-radius: 8px;
-        font-size: 12px;
-        font-weight: 600;
-        font-family: inherit;
-        cursor: pointer;
-        transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-      }
-      .mode-tab.selected {
-        background: var(--paper-2);
-        color: var(--ink);
-        border-color: var(--ink);
-      }
       .custom-duration {
         display: flex;
         align-items: center;
         gap: 6px;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
       }
       .custom-duration input[type="number"] {
-        width: 50px;
-        padding: 8px;
-        border-radius: 8px;
-        border: 2px solid var(--line);
-        background: var(--paper);
-        color: var(--ink);
+        width: 52px;
+        padding: 8px 6px;
+        border-radius: 7px;
+        border: 1px solid var(--line);
+        background: var(--hearth-2);
+        color: var(--wax);
+        font-family: "Space Mono", monospace;
         font-size: 13px;
-        font-family: inherit;
         text-align: center;
       }
       .custom-duration span {
         font-size: 12px;
-        color: var(--ink-soft);
+        color: var(--smoke);
+        font-weight: 600;
       }
+
+      #studyTopic {
+        width: 100%;
+        padding: 9px 10px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: var(--hearth-2);
+        color: var(--wax);
+        font-size: 13px;
+        font-family: "Nunito", sans-serif;
+        margin-bottom: 10px;
+        box-sizing: border-box;
+      }
+      #studyTopic::placeholder { color: var(--smoke); }
+
+      #startSession, #stopSession {
+        width: 100%;
+        padding: 11px;
+        border-radius: 9px;
+        font-size: 14px;
+        font-weight: 800;
+        font-family: "Nunito", inherit;
+        cursor: pointer;
+        border: none;
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+      }
+      #startSession {
+        background: linear-gradient(135deg, var(--ember), var(--ember-hot));
+        color: var(--hearth);
+        box-shadow: 0 3px 0 var(--ember-deep);
+      }
+      #startSession:hover { transform: translateY(-1px); box-shadow: 0 4px 0 var(--ember-deep); }
+      #startSession:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--ember-deep); }
+      #stopSession {
+        background: var(--hearth-2);
+        color: var(--wax);
+        border: 1px solid var(--line);
+      }
+      #stopSession:hover { background: #3d2c20; }
+
       .settings-section {
-        margin-top: 16px;
-        border-top: 2px solid var(--ink);
+        margin-top: 14px;
+        border-top: 1px solid var(--line);
         padding-top: 12px;
       }
       .settings-toggle {
         background: none;
         border: none;
-        color: var(--ink-soft);
-        font-size: 12px;
+        color: var(--smoke);
+        font-size: 11px;
         font-weight: 600;
-        font-family: inherit;
+        font-family: "Space Mono", monospace;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
         cursor: pointer;
         padding: 0;
         margin-bottom: 8px;
@@ -229,68 +300,71 @@
       .settings-body { display: none; }
       #apiKeyInput {
         width: 100%;
-        padding: 8px;
-        border-radius: 8px;
-        border: 2px solid var(--line);
-        background: var(--paper);
-        color: var(--ink);
+        padding: 8px 10px;
+        border-radius: 7px;
+        border: 1px solid var(--line);
+        background: var(--hearth-2);
+        color: var(--wax);
         font-size: 12px;
-        font-family: inherit;
+        font-family: "Space Mono", monospace;
         margin-bottom: 8px;
         box-sizing: border-box;
       }
-      #apiKeyInput::placeholder { color: var(--ink-soft); }
+      #apiKeyInput::placeholder { color: var(--smoke); }
       #saveApiKey {
         width: 100%;
         padding: 8px;
-        background: var(--paper);
-        border: 2px solid var(--ink);
-        color: var(--ink);
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 600;
-        font-family: inherit;
+        background: var(--hearth-2);
+        border: 1px solid var(--line);
+        color: var(--wax);
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: 700;
+        font-family: "Nunito", inherit;
         cursor: pointer;
       }
-      #saveApiKey:hover { background: var(--paper-2); }
+      #saveApiKey:hover { background: #3d2c20; }
       input[type="time"] {
         width: 100%;
-        padding: 8px;
-        border-radius: 8px;
-        border: 2px solid var(--line);
-        background: var(--paper);
-        color: var(--ink);
+        padding: 8px 10px;
+        border-radius: 7px;
+        border: 1px solid var(--line);
+        background: var(--hearth-2);
+        color: var(--wax);
         font-size: 13px;
-        font-family: inherit;
-        margin-bottom: 8px;
+        font-family: "Space Mono", monospace;
+        margin-bottom: 10px;
         box-sizing: border-box;
       }
-      #studyTopic {
-        width: 100%;
-        padding: 8px;
-        border-radius: 8px;
-        border: 2px solid var(--line);
-        background: var(--paper);
-        color: var(--ink);
-        font-size: 13px;
-        font-family: inherit;
-        margin-bottom: 8px;
-        box-sizing: border-box;
-      }
-      #studyTopic::placeholder { color: var(--ink-soft); }
-      #studyTopicDisplay {
-        font-size: 13px;
-        color: var(--ink-soft);
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-      }
+      input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.7; }
     </style>
   </head>
   <body>
-    <h1><img src="icons/icon32.png" alt="" class="logo-icon" /><span class="gradient-text">Blockout</span></h1>
+    <h1><img src="icons/icon32.png" alt="" class="logo-icon" /><span class="wordmark">Blockout</span></h1>
+
+    <div class="candle-wrap">
+      <svg id="candleSvg" viewBox="0 0 56 76" width="60" height="82" aria-hidden="true">
+        <defs>
+          <linearGradient id="waxGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f4e9d8" />
+            <stop offset="100%" stop-color="#e3d3ba" />
+          </linearGradient>
+          <linearGradient id="flameGrad" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="#ff9d4d" />
+            <stop offset="100%" stop-color="#ffd166" />
+          </linearGradient>
+        </defs>
+        <ellipse id="waxPool" cx="28" cy="68" rx="16" ry="5" fill="#e3d3ba" opacity="0.55" />
+        <rect id="candleBody" x="18" y="20" width="20" height="44" rx="3" fill="url(#waxGrad)" />
+        <rect id="meltDrip" x="33" y="22" width="3" height="0" rx="1.5" fill="#c9b491" opacity="0.9" />
+        <rect id="wickNub" x="27" y="15" width="2" height="5" fill="#3a2a1c" />
+        <svg id="flameSvg" x="18" y="-5" width="20" height="26" viewBox="0 0 48 64">
+          <path d="M24 4C15 18 9 30 9 40C9 52 15.5 60 24 60C32.5 60 39 52 39 40C39 30 33 18 24 4Z" fill="url(#flameGrad)" />
+          <path d="M24 24C19 32 16 38 16 44C16 51 19.5 56 24 56C28.5 56 32 51 32 44C32 38 29 32 24 24Z" fill="#ffd166" opacity="0.85" />
+        </svg>
+      </svg>
+      <div class="candle-caption" id="candleCaption">ready to light</div>
+    </div>
 
     <div id="sessionActiveBox" class="session-box" style="display: none">
       <div id="studyTopicDisplay">
@@ -343,7 +417,7 @@
     </div>
 
     <div class="settings-section">
-      <button class="settings-toggle" data-target="aiSettingsBody"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82A1.65 1.65 0 0 0 3 13.09H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg> Anthropic API Key ▾</button>
+      <button class="settings-toggle" data-target="aiSettingsBody"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82A1.65 1.65 0 0 0 3 13.09H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg> Anthropic API Key</button>
       <div id="aiSettingsBody" class="settings-body">
         <input type="password" id="apiKeyInput" placeholder="Anthropic API key (sk-ant-...)" />
         <button id="saveApiKey">Save Key</button>
